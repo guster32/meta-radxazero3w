@@ -1,0 +1,52 @@
+This README file contains information on the contents of the meta-radxazero3w layer.
+
+Please see the corresponding sections below for details.
+
+Dependencies
+============
+
+  URI: <first dependency>
+  branch: <branch name>
+
+  URI: <second dependency>
+  branch: <branch name>
+
+  .
+  .
+  .
+
+Patches
+=======
+
+Please submit any patches against the meta-radxazero3w layer to the xxxx mailing list (xxxx@zzzz.org)
+and cc: the maintainer:
+
+Maintainer: XXX YYYYYY <xxx.yyyyyy@zzzzz.com>
+
+Table of Contents
+=================
+
+  I. Adding the meta-radxazero3w layer to your build
+ II. Misc
+
+
+I. Adding the meta-radxazero3w layer to your build
+=================================================
+
+Run 'bitbake-layers add-layer meta-radxazero3w'
+
+II. Misc
+========
+
+--- replace with specific information about the meta-radxazero3w layer ---
+
+source oe-init-build-env
+bitbake core-image-minimal
+sudo bmaptool copy --bmap core-image-arcadia-dev-odroid-m1s.rootfs.wic.bmap core-image-arcadia-dev-odroid-m1s.rootfs.wic.xz  /dev/mmcblk0
+
+Commands for Building dtb:
+cpp -Wp,-MD,.pre.tmp -nostdinc -I arch/arm64/boot/dts/rockchip/ -I include/ -undef -D__DTS__ -x assembler-with-cpp -o .rk356x.tmp arch/arm64/boot/dts/rockchip/rk3566-odroid-m1s.dts
+dtc -O dtb -o rk3566-odroid-m1s.dtb -b 0 -i arch/arm64/boot/dts/rockchip/ -d .dtc.tmp .rk356x.tmp
+
+Command for compiling a scr boot script file:
+sudo mkimage -C none -A arm64 -T script -d /run/media/guster32/boot/boot.txt /run/media/guster32/boot/boot.scr

@@ -1,0 +1,38 @@
+# short-description: Create SD card image with a boot partition
+# long-description:
+# Create an image that can be written onto a SD card using dd for use
+# with Odroid-m1s style boards .
+# It uses SPL, and u-boot
+#
+# The disk layout used is:
+#  -------------------------------------------
+# | Area Name | From (sector #)| To (Sector #)|
+# |-------------------------------------------|
+# | SPL	      |  64	           | 1077         |
+# | U-Boot	  |  2048	         | 6143         |
+# | BOOT	    |  6144	         | 530431       |
+# | rootfs	  |  530432	       | -            |
+#  -------------------------------------------
+#
+
+# Bootloader with MBR partition table
+bootloader --ptable msdos
+
+# SPL (Secondary Program Loader)
+# From sector 64 to sector 1077
+# Start = 64 sectors * 512 bytes/sector / 1024 = 32 KB
+part --source rawcopy --sourceparams="file=idblock.bin" --align 32 --no-table
+
+# U-Boot
+# From sector 2048 to sector 6143
+# Start = 2048 sectors * 512 bytes/sector / 1024 = 1024 KB
+part --source rawcopy --sourceparams="file=uboot.img" --align 1024 --no-table
+
+# BOOT Partition
+# From sector 6144 to sector 530431
+# Start = 6144 sectors * 512 bytes/sector / 1024 = 3072 KB
+part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --align 3072
+
+# rootfs Partition
+# Starts from sector 530432 onwards
+part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs
