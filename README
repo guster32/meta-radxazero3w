@@ -42,11 +42,11 @@ II. Misc
 
 source oe-init-build-env
 bitbake core-image-minimal
-sudo bmaptool copy --bmap core-image-arcadia-dev-odroid-m1s.rootfs.wic.bmap core-image-arcadia-dev-odroid-m1s.rootfs.wic.xz  /dev/mmcblk0
+sudo bmaptool copy --bmap core-image-arcadia-dev-radxa-zero3w.rootfs.wic.bmap core-image-arcadia-dev-radxa-zero3w.rootfs.wic.xz  /dev/mmcblk0
 
 Commands for Building dtb:
-cpp -Wp,-MD,.pre.tmp -nostdinc -I arch/arm64/boot/dts/rockchip/ -I include/ -undef -D__DTS__ -x assembler-with-cpp -o .rk356x.tmp arch/arm64/boot/dts/rockchip/rk3566-odroid-m1s.dts
-dtc -O dtb -o rk3566-odroid-m1s.dtb -b 0 -i arch/arm64/boot/dts/rockchip/ -d .dtc.tmp .rk356x.tmp
+cpp -Wp,-MD,.pre.tmp -nostdinc -I arch/arm64/boot/dts/rockchip/ -I include/ -undef -D__DTS__ -x assembler-with-cpp -o .rk356x.tmp arch/arm64/boot/dts/rockchip/rk3566-radxa-zero3w.dts
+dtc -O dtb -o rk3566-radxa-zero3w.dtb -b 0 -i arch/arm64/boot/dts/rockchip/ -d .dtc.tmp .rk356x.tmp
 
 Command for compiling a scr boot script file:
 sudo mkimage -C none -A arm64 -T script -d /run/media/guster32/boot/boot.txt /run/media/guster32/boot/boot.scr

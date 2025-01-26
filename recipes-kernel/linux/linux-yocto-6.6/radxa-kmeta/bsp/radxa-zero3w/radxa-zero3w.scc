@@ -1,8 +1,8 @@
-define KMACHINE odroid-m1s
+define KMACHINE radxa-zero3w
 define KTYPE standard
 define KARCH arm64
 
-kconf hardware odroid-m1s.cfg
+kconf hardware radxa-zero3w.cfg
 
 include ktypes/standard/standard.scc
 

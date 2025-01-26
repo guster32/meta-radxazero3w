@@ -89,6 +89,7 @@ UBOOT_BOOTPATH ?= "${MACHINE}"
 USING_NFS = "${@bb.utils.contains_any('UBOOT_BOOT_TYPE', 'nfs', '1', '', d)}"
 
 python create_uboot_boot_txt() {
+    bb.note('Creating U-Boot boot script')
     if d.getVar("USE_BOOTSCR") != "1":
       return
 
@@ -233,9 +234,10 @@ do_compile[prefuncs] += "create_uboot_boot_txt"
 
 do_compile:append () {
     if [ "${UBOOT_ENV_SUFFIX}" = "scr" ]; then
-        echo "uboot-mkimage -C none -A ${ARCH} -T script -d ${UBOOT_ENV_CONFIG} ${WORKDIR}/${UBOOT_ENV_BINARY}"
+        bbnote "uboot-mkimage -C none -A ${ARCH} -T script -d ${UBOOT_ENV_CONFIG} ${WORKDIR}/${UBOOT_ENV_BINARY}"
         uboot-mkimage -C none -A ${ARCH} -T script -d ${UBOOT_ENV_CONFIG} ${WORKDIR}/${UBOOT_ENV_BINARY}
     else
+        bbnote "cp ${UBOOT_ENV_CONFIG} ${WORKDIR}/${UBOOT_ENV_BINARY}"
         cp ${UBOOT_ENV_CONFIG} ${WORKDIR}/${UBOOT_ENV_BINARY}
     fi
 }
