@@ -14,8 +14,6 @@ UBOOT_INITIAL_ENV = ""
 SRC_URI = "git://github.com/radxa/u-boot.git;name=uboot;destsuffix=git/uboot;protocol=https;branch=rk3568-2023.10 \
 	git://github.com/radxa/rkbin.git;name=rkbin;protocol=https;branch=develop-v2024.10;subdir=rkbin \
 	git://github.com/ARM-software/arm-trusted-firmware.git;name=atf;protocol=https;nobranch=1;subdir=atf \
-	file://enable-logging.atf;striplevel=1 \
-	file://rk3328-efuse-init.atf;striplevel=1 \
 	"
 SRC_URI += "file://rockchip-scripts.sh"
 SRC_URI += "file://kconfig.conf"
@@ -61,14 +59,6 @@ do_configure:append() {
     cp ${WORKDIR}/kconfig.conf ${B}/kconfig.conf
     cat ${B}/kconfig.conf >> ${B}/.config
     oe_runmake olddefconfig
-}
-
-
-do_patch () {
-    cd ${ATF}
-    for patch in ${WORKDIR}/enable-logging.atf ${WORKDIR}/rk3328-efuse-init.atf; do
-        patch -p1 < $patch
-    done
 }
 
 do_compile () {
