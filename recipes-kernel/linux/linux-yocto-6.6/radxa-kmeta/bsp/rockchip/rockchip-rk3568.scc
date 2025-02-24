@@ -1,4 +1,4 @@
-define KFEATURE_DESCRIPTION "Devices/drivers commonly used on Odroid Rockchip systems/boards"
+define KFEATURE_DESCRIPTION "Devices/drivers commonly used on Radxa Rockchip systems/boards"
 
 kconf hardware rockchip-rk3568.cfg
 
