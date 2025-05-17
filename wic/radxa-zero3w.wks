@@ -15,8 +15,8 @@
 #  -------------------------------------------
 #
 
-# Bootloader with MBR partition table
-bootloader --ptable msdos
+# Bootloader with GPT partition table
+bootloader --ptable gpt
 
 # SPL (Secondary Program Loader)
 # From sector 64 to sector 1077
