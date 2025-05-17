@@ -31,8 +31,8 @@ part --source rawcopy --sourceparams="file=uboot.img" --align 1024 --no-table
 # BOOT Partition
 # From sector 6144 to sector 530431
 # Start = 6144 sectors * 512 bytes/sector / 1024 = 3072 KB
-part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --align 3072 --size=65536
+part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --align 6144 --size=131072
 
 # rootfs Partition
 # Starts from sector 530432 onwards
-part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs
+part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 131072
