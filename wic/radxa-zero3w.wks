@@ -35,4 +35,4 @@ part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --act
 
 # rootfs Partition
 # Starts from sector 530432 onwards
-part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 131072
+part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 131072 --size=8388608
