@@ -28,4 +28,4 @@ part --source rawcopy --sourceparams="file=uboot.img" --offset 24576 --no-table
 part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 32768 --fixed-size 64M
 
 # rootfs Partition
-part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --offset 163840
+part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --offset 196608
