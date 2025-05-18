@@ -25,7 +25,7 @@ part --source rawcopy --sourceparams="file=u-boot-rockchip.bin" --offset 32 --fi
 part --source rawcopy --sourceparams="file=uboot.img" --offset 24576 --no-table
 
 # BOOT Partition
-part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --align 2048 --fixed-size 64M
+part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 32768 --fixed-size 64M
 
 # rootfs Partition
 part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048
