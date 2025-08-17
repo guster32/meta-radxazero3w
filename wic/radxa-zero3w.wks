@@ -8,9 +8,9 @@
 #  -------------------------------------------
 # | Area Name | From (sector #)| To (Sector #)|
 # |-------------------------------------------|
-# | Bootloader |  64	           | 8191         |
-# | BOOT	  |  8192	       | 139263       |
-# | rootfs	  |  139264	       | -            |
+# | Bootloader |  64	           | 20543        |
+# | BOOT	  |  20544	       | 151615       |
+# | rootfs	  |  151616	       | -            |
 #  -------------------------------------------
 #
 
@@ -18,10 +18,10 @@
 bootloader --ptable gpt
 
 # Complete bootloader (SPL + U-Boot FIT image) - starts at sector 64 (32KB offset)
-part --source rawcopy --sourceparams="file=u-boot-rockchip.bin" --offset 32 --fixed-size 4M --no-table
+part --source rawcopy --sourceparams="file=u-boot-rockchip.bin" --offset 32 --fixed-size 10M --no-table
 
-# BOOT Partition - starts at sector 8192 (4MB offset)
-part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 4096 --fixed-size 64M
+# BOOT Partition - starts at sector 20544 (10MB offset)
+part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 10272 --fixed-size 64M
 
 # rootfs Partition
 part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048
