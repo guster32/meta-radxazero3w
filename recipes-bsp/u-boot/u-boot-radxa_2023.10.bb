@@ -47,15 +47,27 @@ do_configure () {
 
 do_compile () {
 	cd ${S}
-	# Use pre-built ATF from rkbin instead of building from source
-	export BL31="${RK}/bin/rk35/rk3568_bl31_v1.44.elf"
-	export ROCKCHIP_TPL="${RK}/bin/rk35/rk3566_ddr_1056MHz_v1.23.bin"
+	# Use pre-built ATF from rkbin - try alternative version for better compatibility
+	export BL31="${RK}/bin/rk35/rk3568_bl31_v1.43.elf"
+	export ROCKCHIP_TPL="${RK}/bin/rk35/rk3566_ddr_1056MHz_v1.18.bin"
+
+	# Fallback to v1.44 if v1.43 doesn't exist
+	if [ ! -f "${BL31}" ]; then
+		export BL31="${RK}/bin/rk35/rk3568_bl31_v1.44.elf"
+	fi
+
 	# Clean any previous build artifacts that might cause hash issues
 	rm -f u-boot.itb u-boot-rockchip.bin
+
 	# Verify ATF file exists and is readable
 	if [ ! -f "${BL31}" ]; then
 		bbfatal "ATF file ${BL31} not found"
 	fi
+
+	# List available ATF files for debugging
+	echo "Available ATF files:"
+	ls -la ${RK}/bin/rk35/rk3568_bl31_*.elf || true
+
 	oe_runmake all
 }
 
