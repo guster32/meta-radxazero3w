@@ -13,14 +13,12 @@ UBOOT_INITIAL_ENV = ""
 
 SRC_URI = "git://source.denx.de/u-boot/u-boot.git;name=uboot;destsuffix=git/uboot;protocol=https;branch=master \
 	git://github.com/radxa/rkbin.git;name=rkbin;protocol=https;branch=develop-v2024.10;subdir=rkbin \
-	git://github.com/ARM-software/arm-trusted-firmware.git;name=atf;protocol=https;nobranch=1;subdir=atf \
 	"
 SRC_URI += "file://kconfig.conf"
 
 SRCREV_uboot = "d892702080d45468b4b5c1cbd3358705d182d4ef"
 SRCREV_rkbin = "a45caf5db84fddb3422142a77cf2b50336f11161"
-SRCREV_atf = "a1be69e6c5db450f841f0edd9d734bf3cffb6621"
-SRCREV_FORMAT = "uboot_rkbin_atf"
+SRCREV_FORMAT = "uboot_rkbin"
 
 
 PR = "${PV}+git${SRCPV}"
@@ -32,7 +30,6 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 S = "${WORKDIR}/git/uboot"
 RK = "${WORKDIR}/rkbin"
-ATF = "${WORKDIR}/atf"
 B = "${S}"
 
 inherit uboot-boot-scr
@@ -41,7 +38,6 @@ EXTRA_OEMAKE += ' CC="${TARGET_PREFIX}gcc --sysroot=${RECIPE_SYSROOT} -Wno-maybe
 
 do_configure () {
 	cp -a ${RK} ${S}
-	cp -a ${ATF} ${S}
 	cp ${WORKDIR}/kconfig.conf ${S}/kconfig.conf
 	cd ${S}
 
@@ -51,9 +47,15 @@ do_configure () {
 
 do_compile () {
 	cd ${S}
-	# rm -f "tee.bin"
+	# Use pre-built ATF from rkbin instead of building from source
 	export BL31="${RK}/bin/rk35/rk3568_bl31_v1.44.elf"
 	export ROCKCHIP_TPL="${RK}/bin/rk35/rk3566_ddr_1056MHz_v1.23.bin"
+	# Clean any previous build artifacts that might cause hash issues
+	rm -f u-boot.itb u-boot-rockchip.bin
+	# Verify ATF file exists and is readable
+	if [ ! -f "${BL31}" ]; then
+		bbfatal "ATF file ${BL31} not found"
+	fi
 	oe_runmake all
 }
 
