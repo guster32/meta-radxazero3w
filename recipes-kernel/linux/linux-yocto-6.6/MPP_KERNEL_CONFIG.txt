@@ -1,0 +1,56 @@
+# Rockchip MPP Driver - Required Kernel Configuration Options
+
+## Core MPP Service (REQUIRED)
+CONFIG_ROCKCHIP_MPP_SERVICE=m
+# This is the main MPP service framework - can be built as module (=m) or built-in (=y)
+
+## Optional Features
+CONFIG_ROCKCHIP_MPP_PROC_FS=y
+# Enables procfs support for debugging (/proc/mpp/)
+
+## Codec Engines (Enable as needed for your hardware)
+CONFIG_ROCKCHIP_MPP_RKVDEC=y      # H.264/H.265 decoder (older generation)
+CONFIG_ROCKCHIP_MPP_RKVDEC2=y     # H.264/H.265 decoder v2 (newer generation)
+CONFIG_ROCKCHIP_MPP_RKVENC=y      # H.264/H.265 encoder (older generation)
+CONFIG_ROCKCHIP_MPP_RKVENC2=y     # H.264/H.265 encoder v2 (newer generation)
+CONFIG_ROCKCHIP_MPP_VDPU1=y       # VP8/VP9 decoder v1
+CONFIG_ROCKCHIP_MPP_VEPU1=y       # VP8 encoder v1
+CONFIG_ROCKCHIP_MPP_VDPU2=y       # VP8/VP9 decoder v2
+CONFIG_ROCKCHIP_MPP_VEPU2=y       # VP8 encoder v2
+CONFIG_ROCKCHIP_MPP_IEP2=y        # Image Enhancement Processor v2
+CONFIG_ROCKCHIP_MPP_JPGDEC=y      # JPEG decoder
+CONFIG_ROCKCHIP_MPP_JPGENC=y      # JPEG encoder
+CONFIG_ROCKCHIP_MPP_AV1DEC=y      # AV1 decoder (RK3588 and newer)
+CONFIG_ROCKCHIP_MPP_VDPP=y        # Video Data Path Processor
+
+## Required Dependencies (must be enabled)
+CONFIG_HAS_DMA=y
+CONFIG_VIDEOBUF2_DMA_CONTIG=y
+CONFIG_PROC_FS=y                   # Optional but recommended for debugging
+
+## Additional recommended options for media subsystem
+CONFIG_MEDIA_SUPPORT=y
+CONFIG_MEDIA_PLATFORM_SUPPORT=y
+CONFIG_V4L_PLATFORM_DRIVERS=y
+
+## For device tree and platform support
+CONFIG_OF=y                        # Device tree support
+CONFIG_ARM64=y                     # or CONFIG_ARM=y depending on your architecture
+
+## Memory management (usually enabled by default)
+CONFIG_DMA_CMA=y
+CONFIG_CMA=y
+
+# Hardware-specific recommendations by SoC:
+
+## For RK3588/RK3588S (latest generation - enable all)
+# All codec options above
+
+## For RK3568/RK3566
+# Focus on: RKVDEC2, RKVENC2, VEPU2, JPGDEC, JPGENC
+
+## For RK3399
+# Focus on: RKVDEC, RKVENC, VDPU1, VEPU1, JPGDEC
+
+## For older SoCs (RK3328, PX30)
+# Focus on: VDPU1, VEPU1, JPGDEC
