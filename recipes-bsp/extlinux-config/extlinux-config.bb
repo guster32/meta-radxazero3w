@@ -12,7 +12,12 @@ PR = "r1"
 
 inherit deploy
 
+do_install() {
+    install -d ${D}${DEPLOYDIR}
+    install -m 0644 ${WORKDIR}/extlinux.conf ${D}${DEPLOYDIR}/extlinux.conf
+}
+
 do_deploy() {
-    install -d ${DEPLOYDIR}/boot/extlinux
-    install -m 0644 ${WORKDIR}/extlinux.conf ${DEPLOYDIR}/boot/extlinux/extlinux.conf
+    install -d ${DEPLOYDIR}
+    install -m 0644 ${WORKDIR}/extlinux.conf ${DEPLOYDIR}/extlinux.conf
 }
