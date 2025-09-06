@@ -8,16 +8,19 @@ SRC_URI = "file://extlinux.conf"
 S = "${WORKDIR}"
 
 PV = "1.0.0"
-PR = "r1"
+PR = "r2"
 
 inherit deploy
 
 do_install() {
-    install -d ${D}${DEPLOYDIR}
-    install -m 0644 ${WORKDIR}/extlinux.conf ${D}${DEPLOYDIR}/extlinux.conf
+    install -d ${D}/boot/extlinux
+    install -m 0644 ${WORKDIR}/extlinux.conf ${D}/boot/extlinux/
 }
 
 do_deploy() {
     install -d ${DEPLOYDIR}
     install -m 0644 ${WORKDIR}/extlinux.conf ${DEPLOYDIR}/extlinux.conf
 }
+addtask deploy after do_install before do_build
+
+FILES:${PN} = "/boot/extlinux/extlinux.conf"
