@@ -1,27 +1,30 @@
 # short-description: Create SD card image with a boot partition
 # long-description:
-# Create an image that can be written onto a SD card using dd for use
-# with Radxa Zero3w style boards .
-# It uses SPL, and u-boot
+# Create an image for Radxa Zero3W style boards using
+# Rockchip's modern boot flow (idbloader + u-boot.itb).
 #
 # The disk layout used is:
 #  -------------------------------------------
-# | Area Name | From (sector #)| To (Sector #)|
-# |-------------------------------------------|
-# | Bootloader |  64	           | 20543        |
-# | BOOT	  |  20544	       | 151615       |
-# | rootfs	  |  151616	       | -            |
+# | Area Name  | From (sector #) | To (Sector #) |
+# |--------------------------------------------|
+# | idbloader  | 64              | 8191         |  (32KB offset, ~4MB max)
+# | u-boot.itb | 24576           | ~            |  (12MB offset, ~4MB size)
+# | BOOT       | 65536           | 196607       |
+# | rootfs     | 196608          | -            |
 #  -------------------------------------------
 #
 
 # Bootloader with GPT partition table
 bootloader --ptable gpt
 
-# Complete bootloader (SPL + U-Boot FIT image) - starts at sector 64 (32KB offset)
-part --source rawcopy --sourceparams="file=u-boot-rockchip.bin" --offset 32 --fixed-size 10M --no-table
+# SPL+TPL (idbloader) at sector 64 (32KB offset)
+part --source rawcopy --sourceparams="file=idbloader-sd.img" --offset 32 --fixed-size 4096K --no-table
 
-# BOOT Partition - starts at sector 20544 (10MB offset)
-part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 10272 --fixed-size 64M
+# U-Boot proper (FIT image) at sector 24576 (12MB offset)
+part --source rawcopy --sourceparams="file=u-boot.itb" --offset 12288 --fixed-size 4096K --no-table
 
-# rootfs Partition
+# BOOT partition (kernel, dtbs, extlinux.conf, etc.)
+part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 32768 --fixed-size 64M
+
+# Root filesystem
 part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048
