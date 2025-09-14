@@ -5,26 +5,26 @@
 #
 # The disk layout used is:
 #  -------------------------------------------
-# | Area Name  | From (sector #) | To (Sector #) |
-# |--------------------------------------------|
-# | idbloader  | 64              | 8191         |  (32KB offset, ~4MB max)
-# | u-boot.itb | 24576           | ~            |  (12MB offset, ~4MB size)
-# | BOOT       | 65536           | 196607       |
-# | rootfs     | 196608          | -            |
+# | Area Name   | From (sector #) | To (Sector #) |
+# |---------------------------------------------|
+# | idbloader   | 64              | 8191         |  (32KB offset, ~4MB max)
+# | u-boot.itb  | 16384           | ~            |  (8MB offset, ~8MB size)
+# | BOOT        | 65536           | 196607       |
+# | rootfs      | 196608          | -            |
 #  -------------------------------------------
 #
 
 # Bootloader with GPT partition table
 bootloader --ptable gpt
 
-# SPL+TPL (idbloader) at sector 64 (32KB offset)
-part --source rawcopy --sourceparams="file=idbloader-sd.img" --offset 32 --fixed-size 4096K --no-table
+# idbloader-sd.img → starts at sector 64 (32 KB offset)
+part --source rawcopy --sourceparams="file=idbloader-sd.img" --offset 32 --fixed-size 4M --no-table
 
-# U-Boot proper (FIT image) at sector 24576 (12MB offset)
-part --source rawcopy --sourceparams="file=u-boot.itb" --offset 12288 --fixed-size 4096K --no-table
+# u-boot.itb → starts at 8 MB
+part --source rawcopy --sourceparams="file=u-boot.itb" --offset 16384 --fixed-size 8M --no-table
 
-# BOOT partition (kernel, dtbs, extlinux.conf, etc.)
-part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 32768 --fixed-size 64M
+# BOOT Partition
+part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --fixed-size 64M --align 1024
 
-# Root filesystem
+# rootfs Partition
 part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048
