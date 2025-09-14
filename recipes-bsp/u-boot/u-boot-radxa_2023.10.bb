@@ -60,8 +60,9 @@ do_compile () {
     # --- Stage 1: idbloader-sd.img ---
     # This is SPL (u-boot-spl.bin) + TPL (DDR init), wrapped with an rksd header.
     # It is written at 32 KB offset on SD/eMMC so BootROM can find it.
+    # Build idbloader (TPL + SPL with DTB)
     ${RK}/tools/mkimage -n rk3568 -T rksd -d ${ROCKCHIP_TPL} idbloader-sd.img
-    cat spl/u-boot-spl.bin >> idbloader-sd.img
+    cat spl/u-boot-spl-dtb.bin >> idbloader-sd.img
 
     # --- Stage 2: u-boot.itb ---
     # FIT image containing U-Boot proper + BL31 + DTBs.
