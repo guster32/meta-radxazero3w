@@ -7,24 +7,24 @@
 #  -------------------------------------------
 # | Area Name   | From (sector #) | To (Sector #) |
 # |---------------------------------------------|
-# | idbloader   | 64              | 8191         |  (32KB offset, ~4MB max)
-# | u-boot.itb  | 16384           | ~            |  (8MB offset, ~8MB size)
-# | BOOT        | 65536           | 196607       |
-# | rootfs      | 196608          | -            |
+# | idbloader   | 64              | 2111         |  (32KB offset, ~1MB max)
+# | u-boot.itb  | 16384           | 24575        |  (8MB offset, ~4MB size)
+# | BOOT        | 32768           | 163839       |  (16MB offset, 64MB size)
+# | rootfs      | 163840          | -            |  (80MB offset, remaining)
 #  -------------------------------------------
 #
 
 # Bootloader with GPT partition table
 bootloader --ptable gpt
 
-# idbloader-sd.img → starts at sector 64 (32 KB offset)
-part --source rawcopy --sourceparams="file=idbloader-sd.img" --offset 32 --fixed-size 4M --no-table
+# idbloader → starts at sector 64 (32KB offset), optimized size
+part --source rawcopy --sourceparams="file=idbloader.img" --offset 64 --fixed-size 1M --no-table
 
-# u-boot.itb → starts at 8 MB
-part --source rawcopy --sourceparams="file=u-boot.itb" --offset 16384 --fixed-size 8M --no-table
+# u-boot.itb → starts at sector 16384 (8MB offset), optimized size
+part --source rawcopy --sourceparams="file=u-boot.itb" --offset 16384 --fixed-size 4M --no-table
 
-# BOOT Partition
+# BOOT Partition → starts at sector 32768 (16MB offset)
 part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --fixed-size 64M --align 1024
 
-# rootfs Partition
+# rootfs Partition → starts at sector 163840 (80MB offset)
 part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048

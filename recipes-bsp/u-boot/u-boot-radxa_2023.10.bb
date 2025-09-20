@@ -23,7 +23,7 @@ SRCREV_FORMAT = "uboot_rkbin"
 
 PR = "${PV}+git${SRCPV}"
 
-DEPENDS += "python3-native python3-pyelftools-native gcc libgcc bc-native coreutils-native"
+DEPENDS += "python3-native python3-pyelftools-native gcc libgcc bc-native coreutils-native bison-native flex-native"
 UBOOT_SUFFIX ?= "bin"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
@@ -43,8 +43,8 @@ do_configure () {
     oe_runmake ${UBOOT_MACHINE}
 }
 
-do_compile () {
-    cd ${S}
+do_compile() {
+    cd ${B}
     export BL31="${RK}/bin/rk35/rk3568_bl31_v1.44.elf"
     export ROCKCHIP_TPL="${RK}/bin/rk35/rk3566_ddr_1056MHz_v1.23.bin"
 
@@ -61,8 +61,8 @@ do_compile () {
     # This is SPL (u-boot-spl.bin) + TPL (DDR init), wrapped with an rksd header.
     # It is written at 32 KB offset on SD/eMMC so BootROM can find it.
     # Build idbloader (TPL + SPL with DTB)
-    ${RK}/tools/mkimage -n rk3568 -T rksd -d ${ROCKCHIP_TPL} idbloader-sd.img
-    cat spl/u-boot-spl-dtb.bin >> idbloader-sd.img
+    ${RK}/tools/mkimage -n rk3568 -T rksd -d ${ROCKCHIP_TPL} idbloader.img
+    cat spl/u-boot-spl-dtb.bin >> idbloader.img
 
     # --- Stage 2: u-boot.itb ---
     # FIT image containing U-Boot proper + BL31 + DTBs.
@@ -74,19 +74,11 @@ do_deploy:append() {
     install -d ${DEPLOYDIR}
 
     # Stage 1: SPL+TPL for SD/eMMC boot
-    install -m 644 ${B}/idbloader-sd.img ${DEPLOYDIR}/idbloader-sd.img
+    install -m 644 ${B}/idbloader.img ${DEPLOYDIR}/idbloader.img
 
     # Stage 2: U-Boot proper FIT image
     install -m 644 ${B}/u-boot.itb ${DEPLOYDIR}/u-boot.itb
 
-    # Optional: environment binary if provided
-    if [ -n "${UBOOT_ENV_BINARY}" ] && [ -f ${WORKDIR}/${UBOOT_ENV_BINARY} ]; then
-        install -m 644 ${WORKDIR}/${UBOOT_ENV_BINARY} ${DEPLOYDIR}/${UBOOT_ENV_BINARY}
-    fi
 }
-
-### USB LOAD ###
-#sudo ./upgrade_tool db rk356x_spl_loader_ddr1056_v1.10.111.bin   # Rockchip miniloader
-#sudo ./upgrade_tool di -b tmp/deploy/images/radxa-zero3w/u-boot.itb
 
 COMPATIBLE_MACHINE = "radxa-zero3w"
