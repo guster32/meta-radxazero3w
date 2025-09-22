@@ -1,30 +1,32 @@
 # short-description: Create SD card image with a boot partition
 # long-description:
-# Create an image for Radxa Zero3W style boards using
-# Rockchip's modern boot flow (idbloader + u-boot.itb).
+# Create an image that can be written onto a SD card using dd for use
+# with Radxa Zero3w style boards .
+# It uses SPL, and u-boot
 #
 # The disk layout used is:
 #  -------------------------------------------
-# | Area Name   | From (sector #) | To (Sector #) |
-# |---------------------------------------------|
-# | idbloader   | 64              | 2111         |  (32KB offset, ~1MB max)
-# | u-boot.itb  | 16384           | 24575        |  (8MB offset, ~4MB size)
-# | BOOT        | 32768           | 163839       |  (16MB offset, 64MB size)
-# | rootfs      | 163840          | -            |  (80MB offset, remaining)
+# | Area Name | From (sector #)| To (Sector #)|
+# |-------------------------------------------|
+# | Stage 1    |  64            | 8191         |
+# | Stage 2    |  8192          | 12287        |
+# | BOOT       |  12288         | 143359       |
+# | rootfs     |  143360        | -            |
 #  -------------------------------------------
 #
 
 # Bootloader with GPT partition table
 bootloader --ptable gpt
 
-# idbloader → starts at sector 64 (32KB offset), optimized size
-part --source rawcopy --sourceparams="file=idbloader.img" --offset 64 --fixed-size 1M --no-table
+# Multi-stage bootloader approach
+# Stage 1: idbloader.img (SPL + TPL) - starts at sector 64 (32KB offset)
+part --source rawcopy --sourceparams="file=idbloader.img" --offset 32 --fixed-size 4M --no-table
 
-# u-boot.itb → starts at sector 16384 (8MB offset), optimized size
-part --source rawcopy --sourceparams="file=u-boot.itb" --offset 16384 --fixed-size 4M --no-table
+# Stage 2: u-boot.itb (U-Boot FIT image) - starts at sector 16384 (8MB offset) - HARDWARE REQUIRED
+part --source rawcopy --sourceparams="file=u-boot.itb" --offset 8192 --fixed-size 2M --no-table
 
-# BOOT Partition → starts at sector 32768 (16MB offset)
-part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --fixed-size 64M --align 1024
+# BOOT Partition - starts at sector 20544 (10MB offset) - can be optimized
+part --source bootimg-partition --ondisk mmcblk --fstype=ext2 --label boot --active --offset 10272 --fixed-size 64M
 
-# rootfs Partition → starts at sector 163840 (80MB offset)
-part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048
+# rootfs Partition - minimize gap after BOOT partition
+part --source rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 1024

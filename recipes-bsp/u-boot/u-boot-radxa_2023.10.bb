@@ -37,6 +37,7 @@ inherit uboot-boot-scr
 EXTRA_OEMAKE += ' CC="${TARGET_PREFIX}gcc --sysroot=${RECIPE_SYSROOT} -Wno-maybe-uninitialized -Wno-enum-int-mismatch" '
 
 do_configure () {
+    cp -a ${RK} ${S}
     cp ${WORKDIR}/kconfig.conf ${S}/kconfig.conf
     cd ${S}
     cat ${S}/kconfig.conf >> ${S}/configs/${UBOOT_MACHINE}
@@ -44,40 +45,40 @@ do_configure () {
 }
 
 do_compile() {
-    cd ${B}
+    cd ${S}
     export BL31="${RK}/bin/rk35/rk3568_bl31_v1.44.elf"
     export ROCKCHIP_TPL="${RK}/bin/rk35/rk3566_ddr_1056MHz_v1.23.bin"
 
+    # Clean any previous build artifacts that might cause hash issues
     rm -f u-boot.itb idbloader*.img
 
-    [ -f "${BL31}" ] || bbfatal "ATF file ${BL31} not found"
-    [ -f "${ROCKCHIP_TPL}" ] || bbfatal "DDR file ${ROCKCHIP_TPL} not found"
+
+    # Verify files exist
+    if [ ! -f "${BL31}" ]; then
+        bbfatal "ATF file ${BL31} not found"
+    fi
+    if [ ! -f "${ROCKCHIP_TPL}" ]; then
+        bbfatal "DDR file ${ROCKCHIP_TPL} not found"
+    fi
+
+    # List available files for debugging
+    echo "Available ATF files:"
+    ls -la ${RK}/bin/rk35/rk3568_bl31_*.elf || true
+    echo "Available DDR files:"
+    ls -la ${RK}/bin/rk35/rk3566_ddr_*.bin || true
 
     # Build SPL + U-Boot proper
-    oe_runmake CROSS_COMPILE=${TARGET_PREFIX} \
-        BL31=${BL31} ROCKCHIP_TPL=${ROCKCHIP_TPL} all
-
-    # --- Stage 1: idbloader-sd.img ---
-    # This is SPL (u-boot-spl.bin) + TPL (DDR init), wrapped with an rksd header.
-    # It is written at 32 KB offset on SD/eMMC so BootROM can find it.
-    # Build idbloader (TPL + SPL with DTB)
-    ${RK}/tools/mkimage -n rk3568 -T rksd -d ${ROCKCHIP_TPL} idbloader.img
-    cat spl/u-boot-spl-dtb.bin >> idbloader.img
-
-    # --- Stage 2: u-boot.itb ---
-    # FIT image containing U-Boot proper + BL31 + DTBs.
-    # SPL loads this once DRAM is initialized.
-    [ -f u-boot.itb ] || cp u-boot.bin u-boot.itb
+    oe_runmake all
 }
 
 do_deploy:append() {
     install -d ${DEPLOYDIR}
 
-    # Stage 1: SPL+TPL for SD/eMMC boot
-    install -m 644 ${B}/idbloader.img ${DEPLOYDIR}/idbloader.img
+    # Multi-stage bootloader files
+    install -m 755 ${B}/idbloader.img ${DEPLOYDIR}/idbloader.img
 
     # Stage 2: U-Boot proper FIT image
-    install -m 644 ${B}/u-boot.itb ${DEPLOYDIR}/u-boot.itb
+    install -m 755 ${B}/u-boot.itb ${DEPLOYDIR}/u-boot.itb
 
 }
 
