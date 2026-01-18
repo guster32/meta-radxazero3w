@@ -1,0 +1,184 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device tree overlay for IMX708 camera support on Radxa Zero 3W
+ *
+ * Hardware configuration (verified from schematic v1.12):
+ *  - CAMERAB_PDN_L is GPIO3_C6 (active-low powerdown)
+ *  - CSI connector uses I2C2_SCL_M1 / I2C2_SDA_M1
+ *  - 4-lane MIPI CSI-2 interface
+ *  - Power rails: vcc2v8_dvp (2.8V) / vcc1v8_dvp (1.8V)
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+&{/} {
+	/*
+	 * If your sensor driver expects an xclk and you don't yet have CIF_CLKOUT
+	 * wired as a proper clock provider, keep a fixed-clock placeholder.
+	 * (Adjust frequency if your module requires a different xclk.)
+	 */
+	camera_clk: camera-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <24000000>;
+		clock-output-names = "cam_clk";
+	};
+};
+
+&i2c2 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	imx708: imx708@10 {
+		compatible = "sony,imx708";
+		reg = <0x10>;
+
+		clocks = <&camera_clk>;
+		clock-names = "xclk";
+
+		/*
+		 * Use the board-provided camera rails from your base DTSI.
+		 * Your rk3566-radxa-zero-3.dtsi defines:
+		 *  - vcc2v8_dvp (2.8V)
+		 *  - vcc1v8_dvp (1.8V)
+		 */
+		avdd-supply  = <&vcc2v8_dvp>;  /* 2.8V analog */
+		dovdd-supply = <&vcc1v8_dvp>;  /* 1.8V I/O */
+		dvdd-supply  = <&vcc1v8_dvp>;  /* placeholder; adjust if you add a true 1.2V rail */
+
+		/*
+		 * CAMERAB_PDN_L is GPIO3_C6 per schematic (active-low)
+		 * Use as powerdown/enable control.
+		 */
+		pwdn-gpios = <&gpio3 RK_PC6 GPIO_ACTIVE_LOW>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&cam_pins>;
+
+		port {
+			imx708_out: endpoint {
+				remote-endpoint = <&mipi_in_ucam0>;
+				data-lanes = <1 2 3 4>;
+				clock-lanes = <0>;
+				link-frequencies = /bits/ 64 <450000000>;
+			};
+		};
+	};
+};
+
+/* Enable shared CSI2 D-PHY hardware */
+&csi2_dphy_hw {
+	status = "okay";
+};
+
+/* Configure CSI2 D-PHY0 for 4-lane operation */
+&csi2_dphy0 {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			mipi_in_ucam0: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&imx708_out>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+
+			csidphy_out: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&mipi_csi2_input>;
+			};
+		};
+	};
+};
+
+&mipi_csi2 {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			mipi_csi2_input: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&csidphy_out>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+
+			mipi_csi2_output: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&cif_mipi_in>;
+			};
+		};
+	};
+};
+
+&rkcif_mipi_lvds {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			cif_mipi_in: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&mipi_csi2_output>;
+			};
+		};
+	};
+};
+
+&rkcif_mipi_lvds_sditf {
+	status = "okay";
+};
+
+&rkisp {
+	status = "okay";
+};
+
+&rkisp_mmu {
+	status = "okay";
+};
+
+&rkisp_vir0 {
+	status = "okay";
+
+	port {
+		isp0_in: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&cif_mipi_in>;
+		};
+	};
+};
+
+&pinctrl {
+	camera {
+		cam_pins: cam-pins {
+			rockchip,pins =
+				/* CAMERAB_PDN_L = GPIO3_C6 */
+				<3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};
