@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device tree overlay for Sony IMX708 camera on Radxa Zero 3W
+ * 
+ * This overlay adds ONLY the IMX708 sensor-specific configuration.
+ * The MIPI CSI pipeline (PHY, CSI2, RKCIF, RKISP) is already enabled
+ * in the base device tree (rk3566-radxa-zero-3w.dts).
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	fragment@0 {
+		target = <&i2c2>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			imx708: imx708@10 {
+				compatible = "sony,imx708";
+				reg = <0x10>;
+				
+				clocks = <&cru 109>;  /* CLK_CIF_OUT */
+				clock-names = "xclk";
+				
+				pinctrl-names = "default";
+				pinctrl-0 = <&cam_pins>;
+				
+				/* GPIO controls */
+				powerdown-gpios = <&gpio3 22 0>;  /* GPIO_ACTIVE_HIGH */
+				reset-gpios = <&gpio3 21 1>;      /* GPIO_ACTIVE_LOW */
+
+				port {
+					imx708_out: endpoint {
+						remote-endpoint = <&mipi_in_camera>;
+						data-lanes = <1 2 3 4>;
+						clock-lanes = <0>;
+						link-frequencies = /bits/ 64 <450000000>;
+					};
+				};
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&csi2_dphy0>;
+		__overlay__ {
+			ports {
+				port@0 {
+					mipi_in_camera: endpoint {
+						remote-endpoint = <&imx708_out>;
+						data-lanes = <1 2 3 4>;
+					};
+				};
+			};
+		};
+	};
+};
