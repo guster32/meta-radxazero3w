@@ -61,7 +61,6 @@ From u-boot (notice the kernel arguments for extra logging):
 ```
 ext4load mmc 1:1 ${kernel_addr_r} /Image-initramfs-radxa-zero3w.bin
 ext4load mmc 1:1 ${fdt_addr_r} /rk3566-radxa-zero-3w.dtb
-
 setenv bootargs 'console=ttyS2,1500000 earlycon=uart8250,mmio32,0xfe660000 ignore_loglevel loglevel=8 keep_bootcon panic=10 initcall_debug clk_ignore_unused pd_ignore_unused'
 booti ${kernel_addr_r} - ${fdt_addr_r}
 ```

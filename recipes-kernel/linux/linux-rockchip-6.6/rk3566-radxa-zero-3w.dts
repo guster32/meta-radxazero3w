@@ -156,6 +156,8 @@
 &i2c0 {
 	status = "okay";
 
+	/delete-node/ regulator@1c;  /* Remove parent DTSI's fan53555 definition */
+
 	vdd_cpu: regulator@1c {
 		compatible = "tcs,tcs4525";
 		reg = <0x1c>;
