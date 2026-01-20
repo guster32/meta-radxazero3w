@@ -241,6 +241,7 @@
 				regulator-min-microvolt = <500000>;
 				regulator-max-microvolt = <1350000>;
 				regulator-ramp-delay = <6001>;
+				status = "disabled";  /* Temporarily disabled - RK3566 has no NPU */
 
 				regulator-state-mem {
 					regulator-off-in-suspend;
@@ -263,6 +264,7 @@
 				regulator-name = "vdda0v9_image";
 				regulator-min-microvolt = <900000>;
 				regulator-max-microvolt = <900000>;
+				status = "disabled";  /* Temporarily disabled to debug boot hang */
 
 				regulator-state-mem {
 					regulator-off-in-suspend;
