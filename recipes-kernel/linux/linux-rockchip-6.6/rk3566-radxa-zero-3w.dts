@@ -13,6 +13,7 @@
 #include <dt-bindings/pinctrl/rockchip.h>
 #include <dt-bindings/soc/rockchip,vop2.h>
 #include "rk3566.dtsi"
+#include "rk3568-linux.dtsi"
 
 / {
 	model = "Radxa ZERO 3W";
