@@ -560,6 +560,9 @@
 	bus-width = <4>;
 	cap-sd-highspeed;
 	cd-gpios = <&gpio0 RK_PA4 GPIO_ACTIVE_LOW>;
+	clocks = <&cru HCLK_SDMMC0>, <&cru CLK_SDMMC0>,
+	         <&cru SCLK_SDMMC0_DRV>, <&cru SCLK_SDMMC0_SAMPLE>;
+	clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
 	disable-wp;
 	pinctrl-names = "default";
 	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
