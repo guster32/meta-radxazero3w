@@ -462,6 +462,36 @@
 				<3 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+
+	/* Custom pinctrl groups for Radxa Zero 3W MMC routing */
+	sdmmc1 {
+		/omit-if-no-ref/
+		sdmmc1_bus4: sdmmc1-bus4 {
+			rockchip,pins =
+				/* sdmmc1_d0 */
+				<2 RK_PA3 1 &pcfg_pull_up_drv_level_12>,
+				/* sdmmc1_d1 */
+				<2 RK_PA4 1 &pcfg_pull_up_drv_level_12>,
+				/* sdmmc1_d2 */
+				<2 RK_PA5 1 &pcfg_pull_up_drv_level_12>,
+				/* sdmmc1_d3 */
+				<2 RK_PA6 1 &pcfg_pull_up_drv_level_12>;
+		};
+
+		/omit-if-no-ref/
+		sdmmc1_clk: sdmmc1-clk {
+			rockchip,pins =
+				/* sdmmc1_clk */
+				<2 RK_PB0 1 &pcfg_pull_up_drv_level_12>;
+		};
+
+		/omit-if-no-ref/
+		sdmmc1_cmd: sdmmc1-cmd {
+			rockchip,pins =
+				/* sdmmc1_cmd */
+				<2 RK_PA7 1 &pcfg_pull_up_drv_level_12>;
+		};
+	};
 };
 
 /* Camera pipeline: IMX708 → CSI2 PHY → MIPI CSI2 → RKCIF → RKISP → /dev/video */
