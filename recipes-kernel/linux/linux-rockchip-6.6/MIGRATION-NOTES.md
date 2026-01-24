@@ -126,3 +126,42 @@ To add Zero 3E support:
 - `rk3566-radxa-zero-3w.dts` (WiFi variant)
 
 This architecture is proven to work on mainline Linux 6.6.
+
+## Vendor Kernel Specific Fixes
+
+### 7. ✅ Fixed GIC ITS Timeout (CRITICAL)
+
+**Problem:** Vendor kernel uses ITS (Interrupt Translation Service) which causes boot hang
+
+**Symptom:**
+```
+ITS queue timeout (64 1)
+ITS cmd its_build_mapc_cmd failed
+ITS cmd its_build_invall_cmd failed
+```
+
+**Impact:**
+- **System hangs during boot** - never reaches initramfs
+- ITS command queue timeouts waiting for hardware response
+- All interrupts fail after certain point in boot
+
+**Root Cause:**
+- **Vendor kernel** (`rk356x.dtsi`): Uses `arm,gic-v3-its` node @ 0xfd440000
+- **Mainline kernel** (working): Uses MBI (Message Based Interrupts) instead
+- RK3568 hardware doesn't properly support ITS, but works fine with MBI
+
+**Solution Applied:**
+```dts
+&gic {
+    /delete-node/ interrupt-controller@fd440000;  /* Remove ITS */
+    
+    /* Use MBI instead - matches working mainline */
+    mbi-alias = <0x0 0xfd410000>;
+    mbi-ranges = <296 24>;
+    msi-controller;
+};
+```
+
+**Result:** System now boots to completion without interrupt controller timeouts! ✅
+
+This was the **critical blocker** preventing full boot. The fix aligns vendor kernel GIC configuration with proven mainline approach.

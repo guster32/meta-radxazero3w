@@ -20,17 +20,6 @@
 		stdout-path = "serial2:1500000n8";
 	};
 
-	hdmi-con {
-		compatible = "hdmi-connector";
-		type = "d";
-
-		port {
-			hdmi_con_in: endpoint {
-				remote-endpoint = <&hdmi_out_con>;
-			};
-		};
-	};
-
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
@@ -95,14 +84,8 @@
 	};
 };
 
-/* Fix GIC ITS timeout - use MBI instead of ITS like mainline */
-&gic {
-	/delete-node/ interrupt-controller@fd440000;
-	
-	/* Use MBI (Message Based Interrupts) instead of ITS */
-	mbi-alias = <0x0 0xfd410000>;
-	mbi-ranges = <296 24>;
-	msi-controller;
+&combphy1_usq {
+	status = "okay";
 };
 
 &cpu0 {
@@ -130,16 +113,10 @@
 	avdd-0v9-supply = <&vdda_0v9>;
 	avdd-1v8-supply = <&vcca1v8_image>;
 	status = "okay";
-	
-	ports {
-		hdmi_out: port@1 {
-			reg = <1>;
-			
-			hdmi_out_con: endpoint {
-				remote-endpoint = <&hdmi_con_in>;
-			};
-		};
-	};
+};
+
+&hdmi_in_vp0 {
+    status = "okay";
 };
 
 &hdmi_sound {
