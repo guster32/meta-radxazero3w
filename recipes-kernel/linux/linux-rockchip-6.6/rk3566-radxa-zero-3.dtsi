@@ -95,6 +95,16 @@
 	};
 };
 
+/* Fix GIC ITS timeout - use MBI instead of ITS like mainline */
+&gic {
+	/delete-node/ interrupt-controller@fd440000;
+	
+	/* Use MBI (Message Based Interrupts) instead of ITS */
+	mbi-alias = <0x0 0xfd410000>;
+	mbi-ranges = <296 24>;
+	msi-controller;
+};
+
 &cpu0 {
 	cpu-supply = <&vdd_cpu>;
 };
