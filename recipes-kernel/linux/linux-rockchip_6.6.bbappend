@@ -7,6 +7,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/linux-rockchip-6.6:"
 
 SRC_URI:append:radxa-zero3w = " \
+    file://rk3566-radxa-zero-3.dtsi \
     file://rk3566-radxa-zero-3w.dts \
     file://rk3566-radxa-zero-3w-imx708.dtso \
     file://radxa-zero3w.cfg \
@@ -27,7 +28,12 @@ KERNEL_DTC_FLAGS += "-@"
 INSANE_SKIP:${PN}-src = "buildpaths"
 
 do_configure:prepend() {
-    # Copy base device tree
+    # Copy common base dtsi
+    if [ -f ${WORKDIR}/rk3566-radxa-zero-3.dtsi ]; then
+        cp ${WORKDIR}/rk3566-radxa-zero-3.dtsi ${S}/arch/arm64/boot/dts/rockchip/
+    fi
+    
+    # Copy board-specific device tree
     if [ -f ${WORKDIR}/rk3566-radxa-zero-3w.dts ]; then
         cp ${WORKDIR}/rk3566-radxa-zero-3w.dts ${S}/arch/arm64/boot/dts/rockchip/
     fi
