@@ -15,9 +15,6 @@
 	aliases {
 		mmc0 = &sdmmc0;
 	};
-	
-	/* Delete malformed reserved-memory nodes from vendor kernel */
-	/delete-node/ reserved-memory;
 
 	chosen {
 		stdout-path = "serial2:1500000n8";
