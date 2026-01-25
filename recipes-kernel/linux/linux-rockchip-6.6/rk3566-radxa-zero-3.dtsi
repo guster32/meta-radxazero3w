@@ -99,7 +99,6 @@
 	msi-parent = <&gic>;
 };
 
-/* Legacy-ish VPU blocks (mpp) */
 &vdpu        { status = "okay"; };
 &vdpu_mmu    { status = "okay"; };
 
@@ -114,14 +113,12 @@
 &iep         { status = "okay"; };
 &iep_mmu     { status = "okay"; };
 
-/* “Newer” RK VENC/VDEC blocks */
 &rkvenc      { status = "okay"; };
 &rkvenc_mmu  { status = "okay"; };
 
 &rkvdec      { status = "okay"; };
 &rkvdec_mmu  { status = "okay"; };
 
-/* 2D blitter */
 &rk_rga      { status = "okay"; };
 
 &bus_npu    { status = "okay"; };
