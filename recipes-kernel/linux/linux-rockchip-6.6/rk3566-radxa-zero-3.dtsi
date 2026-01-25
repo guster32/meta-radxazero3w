@@ -86,10 +86,11 @@
 
 &gic {
 	/delete-node/ interrupt-controller@fd440000;
+};
 
+&gic {
 	msi-controller;
 	#msi-cells = <1>;
-
 	mbi-alias  = <0x0 0xfd410000>;
 	mbi-ranges = <0x0 0xfd410000 0x0 0x1000>;
 };
