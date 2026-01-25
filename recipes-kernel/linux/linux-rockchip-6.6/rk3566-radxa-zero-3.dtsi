@@ -149,7 +149,7 @@
 		vcc9-supply = <&vcc5v_midu>;
 
 		regulators {
-			vdd_cpu: DCDC_REG1 {
+			vdd_cpu: vdd_logic: DCDC_REG1 {
 				regulator-name = "vdd_cpu";
 				regulator-always-on;
 				regulator-boot-on;
