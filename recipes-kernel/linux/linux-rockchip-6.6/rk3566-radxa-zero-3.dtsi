@@ -84,6 +84,49 @@
 	};
 };
 
+&gic {
+	/delete-node/ interrupt-controller@fd440000;
+
+	msi-controller;
+	#msi-cells = <1>;
+
+	mbi-alias  = <0x0 0xfd410000>;
+	mbi-ranges = <0x0 0xfd410000 0x0 0x1000>;
+};
+
+&pcie2x1 {
+	/delete-property/ msi-map;
+	msi-parent = <&gic>;
+};
+
+/* Legacy-ish VPU blocks (mpp) */
+&vdpu        { status = "okay"; };
+&vdpu_mmu    { status = "okay"; };
+
+&mpp_srv  	 { status = "okay"; };
+
+&jpegd       { status = "okay"; };
+&jpegd_mmu   { status = "okay"; };
+
+&vepu        { status = "okay"; };
+&vepu_mmu    { status = "okay"; };
+
+&iep         { status = "okay"; };
+&iep_mmu     { status = "okay"; };
+
+/* “Newer” RK VENC/VDEC blocks */
+&rkvenc      { status = "okay"; };
+&rkvenc_mmu  { status = "okay"; };
+
+&rkvdec      { status = "okay"; };
+&rkvdec_mmu  { status = "okay"; };
+
+/* 2D blitter */
+&rk_rga      { status = "okay"; };
+
+&bus_npu    { status = "okay"; };
+&rknpu_mmu  { status = "okay"; };
+
 &combphy1_usq {
 	status = "okay";
 };
@@ -104,21 +147,40 @@
 	cpu-supply = <&vdd_cpu>;
 };
 
-&gpu {
-	mali-supply = <&vdd_gpu_npu>;
-	status = "okay";
-};
 
 &gpu_opp_table {
-    /* optional but harmless */
-    /delete-property/ opp-supported-hw;
+    /delete-property/ rockchip,supported-hw;
+    /delete-property/ rockchip,max-volt;
+    /delete-property/ rockchip,temp-hysteresis;
+    /delete-property/ rockchip,low-temp;
+    /delete-property/ rockchip,low-temp-adjust-volt;
+    /delete-property/ rockchip,pvtm-voltage-sel;
+    /delete-property/ rockchip,pvtm-ch;
+    /delete-property/ nvmem-cells;
+    /delete-property/ nvmem-cell-names;
+    /delete-property/ mbist-vmin;
 
-    opp-200000000 { /delete-property/ opp-supported-hw; };
-    opp-300000000 { /delete-property/ opp-supported-hw; };
-    opp-400000000 { /delete-property/ opp-supported-hw; };
-    opp-600000000 { /delete-property/ opp-supported-hw; };
-    opp-700000000 { /delete-property/ opp-supported-hw; };
-    opp-800000000 { /delete-property/ opp-supported-hw; };
+    /delete-node/ opp-200000000;
+    /delete-node/ opp-300000000;
+    /delete-node/ opp-400000000;
+    /delete-node/ opp-600000000;
+    /delete-node/ opp-700000000;
+    /delete-node/ opp-800000000;
+
+    opp-200000000 { opp-hz = /bits/ 64 <200000000>; opp-microvolt = <850000 850000 1000000>; };
+    opp-300000000 { opp-hz = /bits/ 64 <300000000>; opp-microvolt = <850000 850000 1000000>; };
+    opp-400000000 { opp-hz = /bits/ 64 <400000000>; opp-microvolt = <850000 850000 1000000>; };
+    opp-600000000 { opp-hz = /bits/ 64 <600000000>; opp-microvolt = <900000 900000 1000000>; };
+    opp-700000000 { opp-hz = /bits/ 64 <700000000>; opp-microvolt = <950000 950000 1000000>; };
+
+    /* drop 800MHz if you suspect rk3566t */
+    opp-800000000 { opp-hz = /bits/ 64 <800000000>; opp-microvolt = <1000000 1000000 1000000>; };
+};
+
+&gpu {
+    mali-supply = <&vdd_gpu_npu>;
+    operating-points-v2 = <&gpu_opp_table>;
+    status = "okay";
 };
 
 
@@ -440,28 +502,4 @@
 	assigned-clocks = <&cru DCLK_VOP0>, <&cru DCLK_VOP1>;
 	assigned-clock-parents = <&pmucru PLL_HPLL>, <&cru PLL_VPLL>;
 	status = "okay";
-};
-
-&vop_mmu {
-	status = "okay";
-};
-
-&mpp_srv {
-    status = "okay";
-};
-
-&rkvdec {
-    status = "okay";
-};
-
-&rkvenc {
-    status = "okay";
-};
-
-&vdpu {
-    status = "okay";
-};
-
-&vepu {
-    status = "okay";
 };
