@@ -109,6 +109,19 @@
 	status = "okay";
 };
 
+&gpu_opp_table {
+    /* optional but harmless */
+    /delete-property/ opp-supported-hw;
+
+    opp-200000000 { /delete-property/ opp-supported-hw; };
+    opp-300000000 { /delete-property/ opp-supported-hw; };
+    opp-400000000 { /delete-property/ opp-supported-hw; };
+    opp-600000000 { /delete-property/ opp-supported-hw; };
+    opp-700000000 { /delete-property/ opp-supported-hw; };
+    opp-800000000 { /delete-property/ opp-supported-hw; };
+};
+
+
 &hdmi {
 	avdd-0v9-supply = <&vdda_0v9>;
 	avdd-1v8-supply = <&vcca1v8_image>;
@@ -431,4 +444,24 @@
 
 &vop_mmu {
 	status = "okay";
+};
+
+&mpp_srv {
+    status = "okay";
+};
+
+&rkvdec {
+    status = "okay";
+};
+
+&rkvenc {
+    status = "okay";
+};
+
+&vdpu {
+    status = "okay";
+};
+
+&vepu {
+    status = "okay";
 };
