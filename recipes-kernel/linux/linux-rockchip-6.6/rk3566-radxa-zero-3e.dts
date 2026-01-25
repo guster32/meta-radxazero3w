@@ -55,3 +55,23 @@
 		};
 	};
 };
+
+&mpp_srv {
+    status = "okay";
+};
+
+&rkvdec {
+    status = "okay";
+};
+
+&rkvenc {
+    status = "okay";
+};
+
+&vdpu {
+    status = "okay";
+};
+
+&vepu {
+    status = "okay";
+};
