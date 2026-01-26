@@ -92,7 +92,7 @@
 	msi-controller;
 	#msi-cells = <1>;
 	mbi-alias  = <0x0 0xfd410000>;
-	mbi-ranges = <0x0 0xfd410000 0x0 0x1000>;
+	mbi-ranges = <296 24>;
 };
 
 &pcie2x1 {
@@ -176,11 +176,22 @@
 };
 
 &gpu {
+	compatible = "arm,mali-bifrost";
+	clocks = <&cru ACLK_GPU_PRE>, <&cru CLK_GPU>;
+	clock-names = "bus", "core";
+	operating-points-v2 = <&gpu_opp_table>;
     mali-supply = <&vdd_gpu_npu>;
-    operating-points-v2 = <&gpu_opp_table>;
+    #cooling-cells = <2>;
     status = "okay";
 };
 
+&vop {
+	vop-supply = <&vdd_logic>;
+};
+
+&vop_mmu {
+	status = "okay";
+};
 
 &hdmi {
 	avdd-0v9-supply = <&vdda_0v9>;
