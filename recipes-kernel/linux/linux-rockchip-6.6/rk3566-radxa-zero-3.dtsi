@@ -84,11 +84,6 @@
 	};
 };
 
-&reserved_memory {
-	/delete-node/ drm-logo@0;
-	/delete-node/ drm-cubic-lut@0;
-};
-
 
 &gic {
 	/delete-node/ interrupt-controller@fd440000;
