@@ -82,11 +82,11 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 	};
+};
 
-	reserved-memory {
-		/delete-node/ drm-logo@0;
-		/delete-node/ drm-cubic-lut@0;
-	};
+&reserved_memory {
+	/delete-node/ drm-logo@0;
+	/delete-node/ drm-cubic-lut@0;
 };
 
 
