@@ -106,6 +106,7 @@
 
 &mpp_srv  	 { status = "okay"; };
 
+&ebc		 { status = "okay"; };
 &jpegd       { status = "okay"; };
 &jpegd_mmu   { status = "okay"; };
 
@@ -114,6 +115,11 @@
 
 &iep         { status = "okay"; };
 &iep_mmu     { status = "okay"; };
+
+&eink        { status = "okay"; };
+
+&rkcif       { status = "okay"; };
+&rkcif_mmu  { status = "okay"; };
 
 &rkvenc      { status = "okay"; };
 &rkvenc_mmu  { status = "okay"; };
@@ -177,17 +183,26 @@
 };
 
 &gpu {
-	compatible = "arm,mali-bifrost";
-	interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>,
-			     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
-			     <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
-	interrupt-names = "gpu", "job", "mmu";
-	clocks = <&cru ACLK_GPU_PRE>, <&cru CLK_GPU>;
-	clock-names = "bus", "core";
+	/* CRITICAL FIX: Panfrost requires specific IRQ order and names */
+	/* Base kernel has wrong order - Panfrost is strict about this! */
+	interrupt-names = "job", "mmu", "gpu";
+	interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>,  /* job */
+			     <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,  /* mmu */
+			     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;  /* gpu */
+	
+	/* Use vendor GPU regulator */
+	mali-supply = <&vdd_gpu_npu>;
+	
+	/* Keep base kernel's SCMI clock configuration */
+	/* DO NOT override clocks - base has correct SCMI setup */
+	
+	/* Keep base kernel's power-domain */
+	/* DO NOT override power-domains - critical for GPU power-on */
+	
+	/* Use customized OPP table (defined above) */
 	operating-points-v2 = <&gpu_opp_table>;
-    mali-supply = <&vdd_gpu_npu>;
-    #cooling-cells = <2>;
-    status = "okay";
+	
+	status = "okay";
 };
 
 &display_subsystem {
