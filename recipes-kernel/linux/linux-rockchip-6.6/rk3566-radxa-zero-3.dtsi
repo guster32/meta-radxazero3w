@@ -190,8 +190,53 @@
     status = "okay";
 };
 
+&display_subsystem {
+  route {
+    route-hdmi {
+      status = "okay";
+    };
+	route-edp {
+      status = "disabled";
+    };
+	route-lvds {
+      status = "disabled";
+    };
+	route-dsi0 {
+      status = "disabled";
+    };
+	route-dsi1 {
+      status = "disabled";
+    };
+	route-rgb {
+      status = "disabled";
+    };
+  };
+};
+
+&hdmi {
+  status = "okay";
+
+  ports {
+    port@0 {
+	  status = "okay";
+      hdmi_in_vp0: endpoint@0 { status = "okay"; };
+      hdmi_in_vp1: endpoint@1 { status = "disabled"; };
+    };
+  };
+};
+
 &vop {
 	vop-supply = <&vdd_logic>;
+	status = "okay";
+	ports {
+		port@0 {
+			status = "okay";
+			vp0_out_dsi0: endpoint@0 { status = "disabled"; };
+			vp0_out_dsi1: endpoint@1 { status = "disabled"; };
+			vp0_out_edp: endpoint@2 { status = "disabled"; };
+			vp0_out_hdmi: endpoint@3 { status = "okay"; };
+		};
+  };
 };
 
 &vop_mmu {

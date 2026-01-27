@@ -11,6 +11,9 @@ SRC_URI:append:radxa-zero3w = " \
     file://rk3566-radxa-zero-3w.dts \
     file://rk3566-radxa-zero-3w-imx708.dtso \
     file://radxa-zero3w.cfg \
+    file://psplash-fb.cfg \
+    file://camera-mipi-csi.cfg \
+    file://gpu-panfrost.cfg \
     file://0001-arm64-dts-rockchip-Add-Radxa-Zero-3W-support.patch \
     file://0002-media-i2c-Add-Sony-IMX708-sensor-driver.patch \
 "
