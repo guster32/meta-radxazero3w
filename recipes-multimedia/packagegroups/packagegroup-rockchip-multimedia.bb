@@ -14,7 +14,6 @@ RDEPENDS:${PN} = " \
 
 # Optional: Add FFmpeg with MPP support if available
 RRECOMMENDS:${PN} = " \
-    ffmpeg \
     gstreamer1.0 \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
