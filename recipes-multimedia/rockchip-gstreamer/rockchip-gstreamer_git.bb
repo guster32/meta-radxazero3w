@@ -7,7 +7,7 @@ video encoding, decoding, and RGA for color space conversion"
 HOMEPAGE = "https://github.com/Meonardo/gst-rockchip"
 SECTION = "multimedia"
 LICENSE = "LGPL-2.1-or-later"
-LIC_FILES_CHKSUM = "file://COPYING;md5=6762ed442b3822387a51c92d928ead0d"
+LIC_FILES_CHKSUM = "file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
 DEPENDS = " \
     gstreamer1.0 \
