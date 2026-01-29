@@ -36,6 +36,7 @@ ls /dev/video*
 ### Recipes
 - `rockchip-mpp` - Video encode/decode library (H.264, H.265, VP8, VP9)
 - `rockchip-librga` - 2D graphics acceleration (scale, rotate, convert)
+- `gstreamer1.0-rockchip` - GStreamer plugins with MPP/RGA acceleration
 - `packagegroup-rockchip-multimedia` - Everything bundled together
 
 ### Kernel Support
@@ -94,9 +95,11 @@ gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! mppvideodec ! 
 
 ## Documentation
 
-- **Full Guide:** [ROCKCHIP-MPP-GUIDE.md](ROCKCHIP-MPP-GUIDE.md)
+- **MPP Guide:** [ROCKCHIP-MPP-GUIDE.md](ROCKCHIP-MPP-GUIDE.md) - Direct MPP API usage
+- **GStreamer Guide:** [gstreamer1.0-rockchip/GSTREAMER-ROCKCHIP-GUIDE.md](gstreamer1.0-rockchip/GSTREAMER-ROCKCHIP-GUIDE.md) - GStreamer plugins
 - **Upstream MPP:** https://github.com/rockchip-linux/mpp
 - **Upstream RGA:** https://github.com/airockchip/librga
+- **GStreamer Plugins:** https://github.com/Meonardo/gst-rockchip
 
 ## Troubleshooting
 

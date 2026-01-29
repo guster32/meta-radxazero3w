@@ -10,10 +10,7 @@ inherit packagegroup
 RDEPENDS:${PN} = " \
     rockchip-mpp \
     rockchip-librga \
-"
-
-# Optional: Add FFmpeg with MPP support if available
-RRECOMMENDS:${PN} = " \
+    rockchip-gstreamer \
     gstreamer1.0 \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
