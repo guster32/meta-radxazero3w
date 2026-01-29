@@ -12,6 +12,7 @@ SRC_URI:append:radxa-zero3w = " \
     file://rk3566-radxa-zero-3w-imx708.dtso \
     file://radxa-zero3w.cfg \
     file://wifi-bt.cfg \
+    file://rk628-hdmi-mipi.cfg \
     file://led-triggers.cfg \
     file://psplash-fb.cfg \
     file://camera-mipi-csi.cfg \
