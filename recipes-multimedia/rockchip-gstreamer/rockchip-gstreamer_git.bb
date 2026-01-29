@@ -35,6 +35,7 @@ FILES:${PN} += " \
 
 FILES:${PN}-dev += " \
     ${libdir}/gstreamer-1.0/*.a \
+    ${libdir}/gstreamer-1.0/pkgconfig \
 "
 
 # Runtime dependencies
