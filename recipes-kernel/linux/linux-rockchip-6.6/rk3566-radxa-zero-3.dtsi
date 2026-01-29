@@ -263,15 +263,6 @@
 	status = "okay";
 };
 
-&usb_host0_xhci {
-	dr_mode = "peripheral";
-	status = "okay";
-};
-
-&usb_host1_xhci {
-	status = "okay";
-};
-
 &i2c0 {
 	status = "okay";
 
