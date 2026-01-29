@@ -69,7 +69,7 @@
 	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_datastrobe>;
 	vmmc-supply = <&vcc_3v3>;
 	vqmmc-supply = <&vcc_1v8>;
-	status = "disabled";
+	status = "okay";
 };
 
 &sdmmc1 {
