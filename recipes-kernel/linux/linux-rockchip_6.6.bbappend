@@ -10,6 +10,7 @@ SRC_URI:append:radxa-zero3w = " \
     file://rk3566-radxa-zero-3.dtsi \
     file://rk3566-radxa-zero-3w.dts \
     file://rk3566-radxa-zero-3w-imx708.dtso \
+    file://rk3566-radxa-zero-3w-rk628.dtso \
     file://radxa-zero3w.cfg \
     file://wifi-bt.cfg \
     file://led-triggers.cfg \
@@ -21,10 +22,11 @@ SRC_URI:append:radxa-zero3w = " \
     file://0003-Adds-support-for-AIC8800D80.patch \
 "
 
-# Base device tree + overlay
+# Base device tree + camera overlays
 KERNEL_DEVICETREE:radxa-zero3w = " \
     rockchip/rk3566-radxa-zero-3w.dtb \
     rockchip/rk3566-radxa-zero-3w-imx708.dtbo \
+    rockchip/rk3566-radxa-zero-3w-rk628.dtbo \
 "
 
 # Enable overlay support (symbols in base DTB for overlays)
@@ -47,6 +49,11 @@ do_configure:prepend() {
     # Copy IMX708 camera overlay
     if [ -f ${WORKDIR}/rk3566-radxa-zero-3w-imx708.dtso ]; then
         cp ${WORKDIR}/rk3566-radxa-zero-3w-imx708.dtso ${S}/arch/arm64/boot/dts/rockchip/
+    fi
+    
+    # Copy RK628 HDMI-to-CSI overlay
+    if [ -f ${WORKDIR}/rk3566-radxa-zero-3w-rk628.dtso ]; then
+        cp ${WORKDIR}/rk3566-radxa-zero-3w-rk628.dtso ${S}/arch/arm64/boot/dts/rockchip/
     fi
 }
 

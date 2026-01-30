@@ -1,0 +1,185 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device tree overlay for RK628 HDMI-to-MIPI-CSI on Radxa Zero 3W
+ * 
+ * RK628 converts HDMI input to MIPI CSI-2 output for video capture.
+ * 
+ * IMPORTANT: Customize GPIO assignments based on your RK628 board:
+ * - interrupt-gpio: RK628 interrupt signal
+ * - reset-gpio: RK628 reset control
+ * - plugin-det-gpio: HDMI cable detection
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+/ {
+	compatible = "radxa,zero-3w", "rockchip,rk3566";
+
+	/* Enable MIPI CSI2 D-PHY hardware */
+	fragment@0 {
+		target = <&csi2_dphy_hw>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	/* Configure CSI2 D-PHY in full 4-lane mode */
+	fragment@1 {
+		target = <&csi2_dphy0>;
+		__overlay__ {
+			status = "okay";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				
+				port@0 {
+					reg = <0>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					hdmi_mipi_in: endpoint@1 {
+						reg = <1>;
+						remote-endpoint = <&hdmiin_out>;
+						data-lanes = <1 2 3 4>;
+					};
+				};
+				
+				port@1 {
+					reg = <1>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					csidphy0_out: endpoint@0 {
+						reg = <0>;
+						remote-endpoint = <&mipi_csi2_input>;
+					};
+				};
+			};
+		};
+	};
+
+	/* Enable MIPI CSI2 Host */
+	fragment@2 {
+		target = <&mipi_csi2>;
+		__overlay__ {
+			status = "okay";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					mipi_csi2_input: endpoint@1 {
+						reg = <1>;
+						remote-endpoint = <&csidphy0_out>;
+					};
+				};
+
+				port@1 {
+					reg = <1>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					mipi_csi2_output: endpoint@0 {
+						reg = <0>;
+						remote-endpoint = <&cif_mipi_in>;
+					};
+				};
+			};
+		};
+	};
+
+	/* Enable RKCIF MIPI LVDS interface */
+	fragment@3 {
+		target = <&rkcif_mipi_lvds>;
+		__overlay__ {
+			status = "okay";
+
+			port {
+				cif_mipi_in: endpoint {
+					remote-endpoint = <&mipi_csi2_output>;
+				};
+			};
+		};
+	};
+
+	/* Add RK628 CSI device on I2C2 (camera I2C bus) */
+	fragment@4 {
+		target = <&i2c2>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			rk628_csi: rk628_csi@50 {
+				compatible = "rockchip,rk628-csi-v4l2";
+				reg = <0x50>;
+				status = "okay";
+				
+				pinctrl-names = "default";
+				pinctrl-0 = <&rk628_hdmiin_pins>;
+				
+				/*
+				 * GPIO Configuration - CUSTOMIZE THESE!
+				 * 
+				 * Based on your hardware schematic, set:
+				 * - Interrupt GPIO
+				 * - Reset GPIO  
+				 * - HDMI plugin detection GPIO
+				 * 
+				 * Example: GPIO3_A0 = <&gpio3 RK_PA0 ...>
+				 */
+				interrupt-parent = <&gpio3>;
+				interrupts = <RK_PA0 IRQ_TYPE_LEVEL_HIGH>;
+				
+				reset-gpios = <&gpio3 RK_PA1 GPIO_ACTIVE_LOW>;
+				plugin-det-gpios = <&gpio3 RK_PA2 GPIO_ACTIVE_LOW>;
+				
+				/* Continuous clock mode for MIPI */
+				continues-clk = <1>;
+
+				/* V4L2 camera module metadata */
+				rockchip,camera-module-index = <0>;
+				rockchip,camera-module-facing = "back";
+				rockchip,camera-module-name = "RK628-HDMI-TO-MIPI";
+				rockchip,camera-module-lens-name = "RK628-CSI";
+
+				/* Port for device tree graph */
+				port {
+					hdmiin_out: endpoint {
+						remote-endpoint = <&hdmi_mipi_in>;
+						data-lanes = <1 2 3 4>;
+					};
+				};
+			};
+		};
+	};
+
+	/* Pinctrl configuration for RK628 GPIOs */
+	fragment@5 {
+		target = <&pinctrl>;
+		__overlay__ {
+			rk628_hdmiin {
+				rk628_hdmiin_pins: rk628-hdmiin-pins {
+					rockchip,pins =
+						/* Interrupt pin - GPIO3_A0 */
+						<3 RK_PA0 RK_FUNC_GPIO &pcfg_pull_none>,
+						/* Plugin detection - GPIO3_A2 */
+						<3 RK_PA2 RK_FUNC_GPIO &pcfg_pull_none>,
+						/* Reset pin - GPIO3_A1 */
+						<3 RK_PA1 RK_FUNC_GPIO &pcfg_pull_none>;
+				};
+			};
+		};
+	};
+};
