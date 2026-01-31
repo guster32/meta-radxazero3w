@@ -38,6 +38,7 @@ bitbake retrofactory-image
 ### Output Files
 
 After building, you'll have:
+
 - `/boot/rk3566-radxa-zero-3w.dtb` - Base device tree
 - `/boot/overlays/rk3566-radxa-zero-3w-imx708.dtbo` - IMX708 overlay
 - `/boot/overlays/rk3566-radxa-zero-3w-rk628.dtbo` - RK628 overlay
@@ -59,6 +60,7 @@ reset-gpios = <&gpio3 21 GPIO_ACTIVE_LOW>;       /* GPIO3_C5 */
 - ⚠️ **YES** - If using custom hardware or different camera connector
 
 The GPIOs (GPIO3_21 and GPIO3_22) are standard for the Radxa Zero 3W camera interface and should work with:
+
 - Raspberry Pi Camera Module 3 (IMX708)
 - Compatible camera modules using IMX708 sensor
 - Standard 22-pin camera FPC connector
@@ -73,6 +75,7 @@ reset-gpios = <&gpio3 21 GPIO_ACTIVE_LOW>;       /* Change GPIO bank/pin */
 ```
 
 Then rebuild:
+
 ```bash
 bitbake -c clean linux-rockchip && bitbake linux-rockchip
 ```
@@ -81,33 +84,42 @@ bitbake -c clean linux-rockchip && bitbake linux-rockchip
 
 ### Loading the Overlay
 
-The overlay needs to be loaded at boot time. This depends on your boot configuration.
+Arcadia uses U-Boot's extlinux/syslinux configuration. The IMX708 overlay is included in the boot menu by default.
 
-#### Method 1: U-Boot extlinux.conf
+#### Boot-time Selection
 
-Edit `/boot/extlinux/extlinux.conf`:
+At boot, you'll see the Arcadia Linux Boot Menu (3-second timeout):
 
 ```
-label Yocto Radxa Zero 3W
-    kernel /Image
-    fdt /rk3566-radxa-zero-3w.dtb
-    fdtoverlays /overlays/rk3566-radxa-zero-3w-imx708.dtbo
-    append root=/dev/mmcblk0p2 rootwait
+Arcadia Linux Boot Menu
+
+1. Arcadia Linux (No Camera/Video)
+2. Arcadia Linux + IMX708 Camera         ← Select this option
+3. Arcadia Linux + RK628 HDMI-to-CSI
 ```
 
-#### Method 2: U-Boot env (if using boot.scr)
+**To use IMX708:** Select option 2 at boot, or wait for timeout to boot option 1 (default).
 
-Add to your boot script:
-```bash
-setenv fdtoverlays overlays/rk3566-radxa-zero-3w-imx708.dtbo
+#### Manual Configuration
+
+If you need to edit boot options, modify `/boot/extlinux/extlinux.conf`:
+
+```
+LABEL arcadia-imx708
+    MENU LABEL Arcadia Linux + IMX708 Camera
+    LINUX /Image-initramfs-radxa-zero3w.bin
+    FDT /rk3566-radxa-zero-3w.dtb
+    FDTOVERLAYS /rockchip/rk3566-radxa-zero-3w-imx708.dtbo
+    APPEND root=LABEL=rootfs rootwait rw console=ttyS2,1500000 ...
 ```
 
-#### Method 3: config.txt (Raspberry Pi style)
+To make IMX708 the default boot option, change:
 
-If your bootloader supports it:
 ```
-dtoverlay=rk3566-radxa-zero-3w-imx708
+DEFAULT arcadia-imx708
 ```
+
+**Note:** The extlinux.conf file is plain text and can be edited directly on the boot partition without special tools.
 
 ## Configuration Details
 
@@ -124,6 +136,7 @@ This is the standard I2C address for the IMX708 sensor.
 ### Camera Clock
 
 The sensor receives its clock from the SoC:
+
 ```dts
 clocks = <&cru 109>;  /* CLK_CIF_OUT */
 ```
@@ -280,6 +293,7 @@ The IMX708 sensor supports various resolutions:
 - **VGA:** 640 x 480
 
 Check available formats:
+
 ```bash
 v4l2-ctl -d /dev/video0 --list-formats-ext
 ```
@@ -315,14 +329,14 @@ You can add sensor-specific properties to the overlay:
 imx708: imx708@10 {
     compatible = "sony,imx708";
     reg = <0x10>;
-    
+
     /* Add custom properties */
     rotation = <180>;
     orientation = <2>;
-    
+
     /* Lens info */
     lens-focus = <0x0 0x10 0x3ff>;
-    
+
     ...
 };
 ```
@@ -371,6 +385,7 @@ The Radxa Zero 3W camera connector uses a standard 22-pin FPC:
 ## Support
 
 For camera issues:
+
 1. Check camera module documentation
 2. Verify physical connections and cable orientation
 3. Test with known-good camera module

@@ -7,7 +7,7 @@ The RK628 HDMI-to-MIPI-CSI bridge support has been added as a device tree overla
 ## Files
 
 - **rk3566-radxa-zero-3w-rk628.dtso** - RK628 CSI overlay
-- **rk3566-radxa-zero-3w-imx708.dtso** - IMX708 camera overlay  
+- **rk3566-radxa-zero-3w-imx708.dtso** - IMX708 camera overlay
 - **linux-rockchip_6.6.bbappend** - Yocto recipe that builds both overlays
 
 ## Architecture
@@ -38,6 +38,7 @@ bitbake retrofactory-image
 ### Output Files
 
 After building, you'll have:
+
 - `/boot/rk3566-radxa-zero-3w.dtb` - Base device tree
 - `/boot/overlays/rk3566-radxa-zero-3w-imx708.dtbo` - IMX708 overlay
 - `/boot/overlays/rk3566-radxa-zero-3w-rk628.dtbo` - RK628 overlay
@@ -47,11 +48,13 @@ After building, you'll have:
 ### ⚠️ GPIO Configuration Required
 
 Before using the RK628 overlay, you **MUST** edit the GPIO assignments in:
+
 ```
 meta-radxazero3w/recipes-kernel/linux/linux-rockchip-6.6/rk3566-radxa-zero-3w-rk628.dtso
 ```
 
 Update these based on your RK628 board connections:
+
 ```dts
 interrupt-parent = <&gpio3>;
 interrupts = <RK_PA0 IRQ_TYPE_LEVEL_HIGH>;  /* ← Your interrupt GPIO */
@@ -61,6 +64,7 @@ plugin-det-gpios = <&gpio3 RK_PA2 GPIO_ACTIVE_LOW>; /* ← Your detect GPIO */
 ```
 
 And update the pinctrl to match:
+
 ```dts
 rockchip,pins =
     <3 RK_PA0 RK_FUNC_GPIO &pcfg_pull_none>,  /* ← Must match interrupt */
@@ -70,33 +74,42 @@ rockchip,pins =
 
 ### Loading the Overlay
 
-The overlay needs to be loaded at boot time. This depends on your boot configuration.
+Arcadia uses U-Boot's extlinux/syslinux configuration. The RK628 overlay is included in the boot menu by default.
 
-#### Method 1: U-Boot extlinux.conf
+#### Boot-time Selection
 
-Edit `/boot/extlinux/extlinux.conf`:
+At boot, you'll see the Arcadia Linux Boot Menu (3-second timeout):
 
 ```
-label Yocto Radxa Zero 3W
-    kernel /Image
-    fdt /rk3566-radxa-zero-3w.dtb
-    fdtoverlays /overlays/rk3566-radxa-zero-3w-rk628.dtbo
-    append root=/dev/mmcblk0p2 rootwait
+Arcadia Linux Boot Menu
+
+1. Arcadia Linux (No Camera/Video)
+2. Arcadia Linux + IMX708 Camera
+3. Arcadia Linux + RK628 HDMI-to-CSI     ← Select this option
 ```
 
-#### Method 2: U-Boot env (if using boot.scr)
+**To use RK628:** Select option 3 at boot, or wait for timeout to boot option 1 (default).
 
-Add to your boot script:
-```bash
-setenv fdtoverlays overlays/rk3566-radxa-zero-3w-rk628.dtbo
+#### Manual Configuration
+
+If you need to edit boot options, modify `/boot/extlinux/extlinux.conf`:
+
+```
+LABEL arcadia-rk628
+    MENU LABEL Arcadia Linux + RK628 HDMI-to-CSI
+    LINUX /Image-initramfs-radxa-zero3w.bin
+    FDT /rk3566-radxa-zero-3w.dtb
+    FDTOVERLAYS /rockchip/rk3566-radxa-zero-3w-rk628.dtbo
+    APPEND root=LABEL=rootfs rootwait rw console=ttyS2,1500000 ...
 ```
 
-#### Method 3: config.txt (Raspberry Pi style)
+To make RK628 the default boot option, change:
 
-If your bootloader supports it:
 ```
-dtoverlay=rk3566-radxa-zero-3w-rk628
+DEFAULT arcadia-rk628
 ```
+
+**Note:** The extlinux.conf file is plain text and can be edited directly on the boot partition without special tools.
 
 ## Using Both Overlays (Not Recommended)
 
@@ -115,6 +128,7 @@ The RK628 overlay is configured to use **I2C2**, which is the standard camera I2
 Default: `0x50`
 
 If your RK628 board uses a different address, edit the overlay:
+
 ```dts
 reg = <0x50>;  /* Change this if needed */
 ```
@@ -222,7 +236,7 @@ KERNEL_DEVICETREE:radxa-zero3w = " \
 - Radxa Zero 3W with camera connector
 - Proper GPIO connections for:
   - Interrupt signal
-  - Reset control  
+  - Reset control
   - HDMI plugin detection
 
 ## References
@@ -235,6 +249,7 @@ KERNEL_DEVICETREE:radxa-zero3w = " \
 ## Support
 
 For GPIO assignments and hardware connections:
+
 1. Check your RK628 board schematic/documentation
 2. Refer to Radxa Zero 3W pinout
 3. Consult similar RK3566/RK3568 reference designs

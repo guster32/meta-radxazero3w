@@ -32,8 +32,6 @@ S = "${WORKDIR}/git/uboot"
 RK = "${WORKDIR}/rkbin"
 B = "${S}"
 
-inherit uboot-boot-scr
-
 EXTRA_OEMAKE += ' CC="${TARGET_PREFIX}gcc --sysroot=${RECIPE_SYSROOT} -Wno-maybe-uninitialized -Wno-enum-int-mismatch" '
 
 do_configure () {
