@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2024 Radxa Limited
+ * Copyright (c) 2024 Retrofactory
+ *
+ * Generic base device tree for Radxa ZERO 3 series
+ * Use board-specific overlays to enable WiFi (3W) or Ethernet (3E)
+ */
+
+/dts-v1/;
+
+#include "rk3566-radxa-zero-3.dtsi"
+
+/ {
+	model = "Radxa ZERO 3";
+	compatible = "radxa,zero-3", "rockchip,rk3566";
+};
+
+&pinctrl {
+	camera {
+		cam_pins: cam-pins {
+			rockchip,pins =
+				/* camera powerdown */
+				<3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>,
+				/* camera reset */
+				<3 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};

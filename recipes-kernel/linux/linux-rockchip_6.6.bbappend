@@ -1,15 +1,18 @@
-# Radxa Zero 3W support for Rockchip vendor kernel
+# Radxa Zero 3W/3E support for Rockchip vendor kernel
 # 
 # Architecture:
-#  - Base DTS: MIPI CSI pipeline (board infrastructure)
-#  - Overlay: IMX708 sensor (camera-specific)
+#  - Base DTB: rk3566-radxa-zero-3.dtb (generic, common hardware)
+#  - Board overlays: Enable WiFi (3W) or Ethernet (3E)
+#  - Camera overlay: Enable IMX708 camera sensor
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/linux-rockchip-6.6:"
 
 SRC_URI:append:radxa-zero3w = " \
     file://rk3566-radxa-zero-3.dtsi \
-    file://rk3566-radxa-zero-3w.dts \
-    file://rk3566-radxa-zero-3w-imx708.dtso \
+    file://rk3566-radxa-zero-3.dts \
+    file://rk3566-radxa-zero-3w-board.dtso \
+    file://rk3566-radxa-zero-3e-board.dtso \
+    file://rk3566-radxa-zero-3-imx708.dtso \
     file://radxa-zero3w.cfg \
     file://wifi-bt.cfg \
     file://led-triggers.cfg \
@@ -21,10 +24,12 @@ SRC_URI:append:radxa-zero3w = " \
     file://0003-Adds-support-for-AIC8800D80.patch \
 "
 
-# Base device tree + camera overlays
+# Generic base + board-specific + camera overlays
 KERNEL_DEVICETREE:radxa-zero3w = " \
-    rockchip/rk3566-radxa-zero-3w.dtb \
-    rockchip/rk3566-radxa-zero-3w-imx708.dtbo \
+    rockchip/rk3566-radxa-zero-3.dtb \
+    rockchip/rk3566-radxa-zero-3w-board.dtbo \
+    rockchip/rk3566-radxa-zero-3e-board.dtbo \
+    rockchip/rk3566-radxa-zero-3-imx708.dtbo \
 "
 
 # Enable overlay support (symbols in base DTB for overlays)
@@ -40,14 +45,22 @@ do_configure:prepend() {
         cp ${WORKDIR}/rk3566-radxa-zero-3.dtsi ${S}/arch/arm64/boot/dts/rockchip/
     fi
     
-    # Copy board-specific device tree
-    if [ -f ${WORKDIR}/rk3566-radxa-zero-3w.dts ]; then
-        cp ${WORKDIR}/rk3566-radxa-zero-3w.dts ${S}/arch/arm64/boot/dts/rockchip/
+    # Copy generic base device tree
+    if [ -f ${WORKDIR}/rk3566-radxa-zero-3.dts ]; then
+        cp ${WORKDIR}/rk3566-radxa-zero-3.dts ${S}/arch/arm64/boot/dts/rockchip/
     fi
     
-    # Copy IMX708 camera overlay
-    if [ -f ${WORKDIR}/rk3566-radxa-zero-3w-imx708.dtso ]; then
-        cp ${WORKDIR}/rk3566-radxa-zero-3w-imx708.dtso ${S}/arch/arm64/boot/dts/rockchip/
+    # Copy board-specific overlays
+    if [ -f ${WORKDIR}/rk3566-radxa-zero-3w-board.dtso ]; then
+        cp ${WORKDIR}/rk3566-radxa-zero-3w-board.dtso ${S}/arch/arm64/boot/dts/rockchip/
+    fi
+    if [ -f ${WORKDIR}/rk3566-radxa-zero-3e-board.dtso ]; then
+        cp ${WORKDIR}/rk3566-radxa-zero-3e-board.dtso ${S}/arch/arm64/boot/dts/rockchip/
+    fi
+    
+    # Copy camera overlay
+    if [ -f ${WORKDIR}/rk3566-radxa-zero-3-imx708.dtso ]; then
+        cp ${WORKDIR}/rk3566-radxa-zero-3-imx708.dtso ${S}/arch/arm64/boot/dts/rockchip/
     fi
 }
 

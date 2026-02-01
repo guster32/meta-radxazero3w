@@ -1,0 +1,75 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device tree overlay for Radxa Zero 3E board-specific features
+ * 
+ * Enables Gigabit Ethernet functionality for the 3E variant.
+ * Use this overlay on Zero 3E boards.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+/ {
+	compatible = "radxa,zero-3e", "rockchip,rk3566";
+
+	fragment@0 {
+		target-path = "/";
+		__overlay__ {
+			model = "Radxa ZERO 3E";
+			
+			aliases {
+				ethernet0 = <&gmac1>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&gmac1>;
+		__overlay__ {
+			clock_in_out = "input";
+			phy-handle = <&rgmii_phy1>;
+			phy-mode = "rgmii-id";
+			phy-supply = <&vcc_3v3>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&gmac1m1_miim
+				     &gmac1m1_tx_bus2
+				     &gmac1m1_rx_bus2
+				     &gmac1m1_rgmii_clk
+				     &gmac1m1_rgmii_bus
+				     &gmac1m1_clkinout>;
+			status = "okay";
+		};
+	};
+
+	fragment@2 {
+		target = <&mdio1>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			
+			rgmii_phy1: ethernet-phy@1 {
+				compatible = "ethernet-phy-ieee802.3-c22";
+				reg = <1>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&gmac1_rstn>;
+				reset-assert-us = <20000>;
+				reset-deassert-us = <50000>;
+				reset-gpios = <&gpio3 RK_PC0 GPIO_ACTIVE_LOW>;
+			};
+		};
+	};
+
+	fragment@3 {
+		target = <&pinctrl>;
+		__overlay__ {
+			gmac1 {
+				gmac1_rstn: gmac1-rstn {
+					rockchip,pins = <3 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
+				};
+			};
+		};
+	};
+};
