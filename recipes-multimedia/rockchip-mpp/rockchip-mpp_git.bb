@@ -12,7 +12,6 @@ LIC_FILES_CHKSUM = "file://LICENSES/Apache-2.0;md5=7f43e699e0a26fae98c2938092f00
 SRCREV = "37145900a208d5ca6eb2adbb0f9bab5d52f38270"
 SRC_URI = "git://github.com/HermanChen/mpp.git;protocol=https;branch=develop"
 
-S = "${WORKDIR}/git"
 
 DEPENDS = "libdrm"
 

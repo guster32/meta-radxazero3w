@@ -12,7 +12,6 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=89aea4e17d99a7cacdbeed46a0096b10"
 SRCREV = "6664094b919d069ae7caf90833ed4d5cc2729585"
 SRC_URI = "git://github.com/airockchip/librga.git;protocol=https;branch=main"
 
-S = "${WORKDIR}/git"
 
 DEPENDS = "libdrm"
 

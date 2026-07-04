@@ -12,7 +12,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}-2023.10:"
 UBOOT_INITIAL_ENV = ""
 
 SRC_URI = " \
-    git://source.denx.de/u-boot/u-boot.git;name=uboot;destsuffix=git/uboot;protocol=https;branch=master \
+    git://source.denx.de/u-boot/u-boot.git;name=uboot;protocol=https;branch=master \
     git://github.com/radxa/rkbin.git;name=rkbin;protocol=https;branch=develop-v2024.10;subdir=rkbin \
     file://kconfig.conf \
 "
@@ -28,7 +28,8 @@ UBOOT_SUFFIX ?= "bin"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-S = "${WORKDIR}/git/uboot"
+# wrynose: git fetcher unpacks to ${UNPACKDIR}/${BP} (=UBOOT_SRC by default)
+S = "${UBOOT_SRC}"
 RK = "${WORKDIR}/rkbin"
 B = "${S}"
 

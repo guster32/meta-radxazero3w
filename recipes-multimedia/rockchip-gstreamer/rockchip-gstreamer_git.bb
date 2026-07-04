@@ -20,7 +20,6 @@ DEPENDS = " \
 SRCREV = "fa0d862a2a5135f0b5e19cdb19aac2355bad2dd3"
 SRC_URI = "git://github.com/Meonardo/gst-rockchip.git;protocol=https;branch=main"
 
-S = "${WORKDIR}/git"
 
 inherit meson pkgconfig
 
