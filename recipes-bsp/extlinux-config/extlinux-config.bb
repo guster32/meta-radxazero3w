@@ -13,12 +13,12 @@ inherit deploy
 
 do_install() {
     install -d ${D}/boot/extlinux
-    install -m 0644 ${WORKDIR}/extlinux.conf ${D}/boot/extlinux/
+    install -m 0644 ${S}/extlinux.conf ${D}/boot/extlinux/
 }
 
 do_deploy() {
     install -d ${DEPLOYDIR}
-    install -m 0644 ${WORKDIR}/extlinux.conf ${DEPLOYDIR}/extlinux.conf
+    install -m 0644 ${S}/extlinux.conf ${DEPLOYDIR}/extlinux.conf
 }
 addtask deploy after do_install before do_build
 
