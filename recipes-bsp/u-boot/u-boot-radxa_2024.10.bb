@@ -18,9 +18,16 @@ the rkbin fork supplies BL31 + DDR binaries for rockchip's multi-stage \
 bootloader (idbloader.img + u-boot.itb)."
 
 SRC_URI = "git://source.denx.de/u-boot/u-boot.git;protocol=https;branch=master;tag=v${PV} \
-           git://github.com/radxa/rkbin.git;name=rkbin;destsuffix=rkbin;protocol=https;branch=develop-v2024.10"
+           git://github.com/radxa/rkbin.git;name=rkbin;destsuffix=rkbin;protocol=https;branch=develop-v${PV}"
 
-SRCREV = "127a42c7257a6ffbbd1575ed1cbaa8f5408a44b3"
+# Multiple SCMs in SRC_URI require SRCREV_FORMAT so bitbake knows which
+# variable maps to which upstream. The order of names here matches the
+# order of SCMs in SRC_URI: u-boot itself + rkbin rockship firmware.
+SRCREV_FORMAT = "_rkbin"
+
+# u-boot v2024.10 tag points to commit 573d69af36cfb10d58e189656b03a659654b0cd9
+# (verified against github.com/u-boot/u-boot mirror via git ls-remote).
+SRCREV = "573d69af36cfb10d58e189656b03a659654b0cd9"
 
 SRCREV_rkbin = "a45caf5db84fddb3422142a77cf2b50336f11161"
 
