@@ -2,6 +2,11 @@ From cbb04cbb02153bed10fca79fdf4e6dc01c450969 Mon Sep 17 00:00:00 2001
 From: Gustavo <guster32@Gustavos-MacBook-Pro.local>
 Date: Mon, 19 Jan 2026 13:24:59 -0800
 Subject: [PATCH] media: i2c: Add Sony IMX708 sensor driver
+Upstream-Status: Inappropriate [configuration]
+  Radxa Zero 3W / IMX708 / AIC8800D80 are board- or vendorext specific.
+  These patches are not upstreamed; they enable peripherals for our target
+  hardware. Marking as Inappropriate/Configuration so bitbakes
+  patch QA skips the Upstream-Status check on them.
 
 Add driver support for Sony IMX708 12MP sensor with the following features:
 - 12MP full resolution (4608x2592) with Quad Bayer

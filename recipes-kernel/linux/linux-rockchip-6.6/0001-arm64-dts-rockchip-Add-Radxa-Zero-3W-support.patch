@@ -2,6 +2,11 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Gustavo Branco <guster32@gmail.com>
 Date: Sun, 19 Jan 2026 13:17:00 -0800
 Subject: [PATCH] arm64: dts: rockchip: Add Radxa Zero 3W support
+Upstream-Status: Inappropriate [configuration]
+  Radxa Zero 3W / IMX708 / AIC8800D80 are board- or vendorext specific.
+  These patches are not upstreamed; they enable peripherals for our target
+  hardware. Marking as Inappropriate/Configuration so bitbakes
+  patch QA skips the Upstream-Status check on them.
 
 Add device tree entry for Radxa Zero 3W board based on RK3566 SoC.
 

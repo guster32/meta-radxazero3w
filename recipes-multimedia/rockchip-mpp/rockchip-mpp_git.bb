@@ -9,7 +9,7 @@ SECTION = "multimedia"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSES/Apache-2.0;md5=7f43e699e0a26fae98c2938092f008d2"
 
-SRCREV = "37145900a208d5ca6eb2adbb0f9bab5d52f38270"
+SRCREV = "1375813cbbae5ad6861b166475dd8fb672183220"
 SRC_URI = "git://github.com/HermanChen/mpp.git;protocol=https;branch=develop"
 
 
