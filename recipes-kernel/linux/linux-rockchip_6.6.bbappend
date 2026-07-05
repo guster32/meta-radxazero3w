@@ -41,26 +41,26 @@ INSANE_SKIP:${PN}-src = "buildpaths"
 
 do_configure:prepend() {
     # Copy common base dtsi
-    if [ -f ${WORKDIR}/rk3566-radxa-zero-3.dtsi ]; then
-        cp ${WORKDIR}/rk3566-radxa-zero-3.dtsi ${S}/arch/arm64/boot/dts/rockchip/
+    if [ -f ${UNPACKDIR}/rk3566-radxa-zero-3.dtsi ]; then
+        cp ${UNPACKDIR}/rk3566-radxa-zero-3.dtsi ${S}/arch/arm64/boot/dts/rockchip/
     fi
-    
+
     # Copy generic base device tree
-    if [ -f ${WORKDIR}/rk3566-radxa-zero-3.dts ]; then
-        cp ${WORKDIR}/rk3566-radxa-zero-3.dts ${S}/arch/arm64/boot/dts/rockchip/
+    if [ -f ${UNPACKDIR}/rk3566-radxa-zero-3.dts ]; then
+        cp ${UNPACKDIR}/rk3566-radxa-zero-3.dts ${S}/arch/arm64/boot/dts/rockchip/
     fi
-    
+
     # Copy board-specific overlays
-    if [ -f ${WORKDIR}/rk3566-radxa-zero-3w-board.dtso ]; then
-        cp ${WORKDIR}/rk3566-radxa-zero-3w-board.dtso ${S}/arch/arm64/boot/dts/rockchip/
+    if [ -f ${UNPACKDIR}/rk3566-radxa-zero-3w-board.dtso ]; then
+        cp ${UNPACKDIR}/rk3566-radxa-zero-3w-board.dtso ${S}/arch/arm64/boot/dts/rockchip/
     fi
-    if [ -f ${WORKDIR}/rk3566-radxa-zero-3e-board.dtso ]; then
-        cp ${WORKDIR}/rk3566-radxa-zero-3e-board.dtso ${S}/arch/arm64/boot/dts/rockchip/
+    if [ -f ${UNPACKDIR}/rk3566-radxa-zero-3e-board.dtso ]; then
+        cp ${UNPACKDIR}/rk3566-radxa-zero-3e-board.dtso ${S}/arch/arm64/boot/dts/rockchip/
     fi
-    
+
     # Copy camera overlay
-    if [ -f ${WORKDIR}/rk3566-radxa-zero-3-imx708.dtso ]; then
-        cp ${WORKDIR}/rk3566-radxa-zero-3-imx708.dtso ${S}/arch/arm64/boot/dts/rockchip/
+    if [ -f ${UNPACKDIR}/rk3566-radxa-zero-3-imx708.dtso ]; then
+        cp ${UNPACKDIR}/rk3566-radxa-zero-3-imx708.dtso ${S}/arch/arm64/boot/dts/rockchip/
     fi
 }
 
