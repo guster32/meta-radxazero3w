@@ -31,6 +31,7 @@
 # AFTER our do_install and pre-creates that symlink correctly.
 
 do_install() {
+    bbnote "ARCADIA_DO_INSTALL_BEGIN: PN=$PN S=$S D=$D"
     install -d ${D}${nonarch_base_libdir}/firmware
 
     # Persist diagnostic snapshots so the next GHA run uploads them.
