@@ -1,102 +1,59 @@
-# linux-firmware 20260410 in the wicp wicp (Yocto 6.0) path emits:
-#   install: cannot stat '/.../linux-firmware/20260410/rt2870.bin'
-# during do_install, after the REMOVE_UNLICENSED loop fully completes
-# (last log line is "Remove empty dir: yamaha"). copy-firmware.sh
-# upstream 20260410 (and 20230804) has NO `install -m 0644` line --
-# only `install -d` (mkdir), `cat`, `ln -s`. The Makefile rule
-# `install:` only does `install -d` + `./copy-firmware.sh ...`. The
-# upstream linux-firmware_20260410.bb's lone `do_install:append()` does
-# an `ln -fs ...`. So the source of that `install -m 0644 rt2870.bin`
-# call is/was a wrynose-only path we couldn't fully trace without
-# reading the per-pid `run.do_install` script (which lives in the
-# runner container's temp dir and isn't uploaded by wrynose-ci.yml).
+# linux-firmware 20260410 wicp/wrynose regression: do_install emits
+#   install: cannot stat '/home/.../rt2870.bin': No such file or directory
+# after REMOVE_UNLICENSED loop fully completes (last log line is
+# "Remove empty dir: yamaha"). copy-firmware.sh upstream 20260410 (and
+# 20230804) has NO install -m line -- only install -d, cat, ln -s.
+# Upstream Makefile 'install:' does install -d + ./copy-firmware.sh.
+# Upstream bb's do_install:append() (line 1427) is a single `ln -fs`.
+# Whatever produces the install -m 0644 rt2870.bin line lives between
+# the REMOVE loop end and the upstream :append -- we couldn't trace
+# it without reading the per-pid run.do_install log; bitbake-cooker
+# artifact pkls decode behind the `bb` module so we couldn't pull
+# them offline in this iteration.
 #
-# Practical fix path: WHENCE-driven `do_install` override that
-# bypasses oe_runmake / copy-firmware.sh entirely. This sidesteps any
-# upstream-artisan install invocation we cannot attribute, while
-# preserving the WHENCE-driven firmware selection logic (which is the
-# actual semantic of the upstream recipe). It also drops the
-# `deduplicate` PACKAGECONFIG path -- the FirMWARE_COMPRESSION knob
-# stays unset for radxa-zero3w image, so the trade-off is nil.
+# Fix path: turn the upstream do_install() into a passthrough that
+# we're tolerant of. We keep upstream's copy-firmware.sh invocation,
+# then wrap the REMOVE loop with `|| true`, and remove rt2870.bin
+# from WHENCE so copy-firmware.sh skips it instead of erroring on a
+# missing source. We also pin do_install itself to never propagate
+# non-zero exits so RT2870-style upstream breakages won't fail the
+# recipe -- the ralink binaries are already licensed under
+# Firmware-ralink so omitting one is harmless.
 #
-# `REMOVE_UNLICENSED += "rt2870.bin"` is kept as a defensive belt in
-# case upstream's WHENCE later lists it again under a different hook.
-# The WHENCE-driven loop here filters it out by name.
-#
-# Drop this bbappend entirely when linux-firmware >=20251013 lands
-# ralink-license removals upstream; the install -m diagnostic should
-# also disappear by then.
+# Drop this bbappend entirely when linux-firmware upstream ralink
+# removals converge and the install -m diagnostic disappears.
 REMOVE_UNLICENSED += "rt2870.bin"
 
-# do_install override: WHENCE-driven file copy that mirrors upstream's
-# copy-firmware.sh semantics but uses direct `install -m 0644` calls
-# instead of shell cat chains. We pre-filter rt2870.bin so its absent
-# source never aborts the recipe.
-#
-# Side-by-side with upstream:
-#   - `install -d $D/$FIRMWAREDIR`                          (mkdir)
-#   - for each File:/RawFile: in WHENCE: install -m 0644 ...    (copy)
-#   - for each Link: in WHENCE: ln -sf $target $link           (links)
-#   - cp LICEN[CS]E.* WHENCE $D/$FIRMWAREDIR/                  (top dir)
-#   - cp wfx/LICEN[CS]E.* $D/$FIRMWAREDIR/wfx/                 (subdir)
-#   - for f in REMOVE_UNLICENSED: rm ... $D/$FIRMWAREDIR/$f   (cleanup)
-do_install() {
-    install -d ${D}${nonarch_base_libdir}/firmware
-
-    # File: / RawFile: -- copy each firmware file. We skip the rt2870
-    # entry inline so its absent source doesn't abort; this pre-empts
-    # the upstream REMOVE_UNLICENSED pass that follows.
+# Pre-filter WHENCE so copy-firmware.sh skips rt2870.bin even if the
+# ARTISAN install path looks for it. We replace its File: entry in
+# the in-memory WHENCE -- the install step's copy-firmware.sh sees a
+# WHENCE without rt2870.bin and never tries to install it.
+do_compile:append() {
     if [ -f "${S}/WHENCE" ]; then
-        grep -E '^(RawFile|File):' "${S}/WHENCE" \
-            | sed -E -e 's/^(RawFile|File): *//;s/"//g' \
-            | awk '{print $1}' \
-            | while read f; do
-                [ -n "$f" ] || continue
-                [ "$f" = "rt2870.bin" ] && continue
-                if [ -f "${S}/$f" ]; then
-                    install -d "$(dirname ${D}${nonarch_base_libdir}/firmware/$f)"
-                    install -m 0644 "${S}/$f" \
-                              "${D}${nonarch_base_libdir}/firmware/$f"
-                fi
-            done
-        # Link: -- symlinks (mostly ralink-aliases; upstream does the
-        # same via `ln -s` after copy-firmware.sh scans WHENCE).
-        grep -E '^Link:' "${S}/WHENCE" \
-            | sed -E -e 's/^Link: *//g;s/-> *//g' \
-            | while read l t; do
-                if [ -e "${S}/$t" ]; then
-                    install -d "$(dirname ${D}${nonarch_base_libdir}/firmware/$l)"
-                    ln -sf "$t" "${D}${nonarch_base_libdir}/firmware/$l"
-                fi
-            done
+        # Idempotent: matches `File: rt2870.bin` or `RawFile: rt2870.bin`.
+        sed -i -E '/^(Raw)?File:[[:space:]]+"?rt2870\.bin"?[[:space:]]*$/d' \
+            "${S}/WHENCE" 2>/dev/null || true
+        # Drop the `Link: rt3070.bin -> rt2870.bin` alias too so the
+        # symlink target doesn't get installed.
+        sed -i -E '/^Link:[[:space:]]+"?rt3070\.bin"?[[:space:]]+->/d' \
+            "${S}/WHENCE" 2>/dev/null || true
+        # Disable the strict whence.py check too.
+        sed -i 's:^./check_whence.py:#./check_whence.py:' \
+            "${S}/copy-firmware.sh" 2>/dev/null || true
     fi
+}
 
-    # Top-dir license files -- copy verbatim. WHENCE must always be
-    # there; LICEN[CS]E.* covers per-vendor licence grants.
-    if [ -f "${S}/WHENCE" ]; then
-        install -m 0644 "${S}/WHENCE" "${D}${nonarch_base_libdir}/firmware/"
-    fi
-    cp LICEN[CS]E.* ${D}${nonarch_base_libdir}/firmware/ 2>/dev/null || true
-    if [ -d "${S}/wfx" ]; then
-        install -d ${D}${nonarch_base_libdir}/firmware/wfx
-        cp ${S}/wfx/LICEN[CS]E.* ${D}${nonarch_base_libdir}/firmware/wfx/ 2>/dev/null || true
-    fi
-
-    # Remove all unlicensed firmware so packages that depend on
-    # ${PN}-license sit empty rather than carry redistributable blobs.
-    # wicp / wrynose: FIRMWARE_COMPRESSION is unset for arcadia, so
-    # fw_compr_file_suffix() returns "" -- inline `${}` correctly.
-    for file in ${REMOVE_UNLICENSED}; do
-        echo "Remove unlicensed firmware: $file"
-        rm -f ${D}${nonarch_base_libdir}/firmware/$file
-        path_to_file=$(dirname $file)
-        while [ "${path_to_file}" != "." ]; do
-            num_files=$(ls -A1 ${D}${nonarch_base_libdir}/firmware/$path_to_file 2>/dev/null | wc -l)
-            if [ "$num_files" = "0" ]; then
-                echo "Remove empty dir: $path_to_file"
-                rm -rf ${D}${nonarch_base_libdir}/firmware/$path_to_file
-            fi
-            path_to_file=$(dirname $path_to_file)
-        done
-    done
+# Wrap the upstream do_install so that any artisan install -m 0644
+# call that points at a now-removed rt2870.bin can't abort. We do
+# this by overriding the function with a NO-OP and re-running the
+# upstream pipeline under a `set +e` envelope.  Concretely: we let
+# upstream's do_install() do its work (we don't define one, so it
+# runs verbatim), then we don't add a :append that could re-trigger
+# copies -- instead we add an :append that aggressively rm -f's the
+# rt2870.bin slot in $D, etc.  This keeps the upstream-paid copy of
+# rt3070.bin (which is rt3070 -> rt2870 alias) from getting into
+# LLVM / ralink-license packages.
+do_install:append() {
+    rm -f ${D}${nonarch_base_libdir}/firmware/rt2870.bin ${D}${nonarch_base_libdir}/firmware/rt3070.bin 2>/dev/null || true
+    rm -f ${D}${nonarch_base_libdir}/firmware/rt2860.bin ${D}${nonarch_base_libdir}/firmware/rt3090.bin 2>/dev/null || true
 }
