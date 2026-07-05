@@ -1,76 +1,113 @@
 # linux-firmware 20260410 wicp/wrynose regression: do_install emits
 # `install: cannot stat '/.../rt2870.bin': No such file or directory`
-# after copy-firmware.sh's WHENCE-File: loop. copy-firmware.sh upstream
-# 20260410 has NO `install -m` line -- only `install -d`, `cat`, `ln -s`.
-# The Makefile rule `install:` only does install -d + ./copy-firmware.sh.
-# Upstream bb's do_install:append() (line 1427) is a single `ln -fs`.
-# Whatever produces the install -m 0644 rt2870.bin line is NOT, as of
-# our last targeted run, something we can fingerprint from the
-# public logs. The probable origin is a wicp-eop bbclass added in
-# wicp / wrynose but invisible without reading run.do_install.<pid>
-# (only the cooker log line is uploaded; the per-task script body
-# itself isn't shipped by .github/workflows/wrynose-ci.yml).
+# after copy-firmware.sh's WHENCE grep loop. copy-firmware.sh upstream
+# 20260410 has NO `install -m` line, the Makefile `install:` target
+# only does install -d + ./copy-firmware.sh, and the upstream bb's
+# `do_install:append()` (line 1427) only does an `ln -fs`. The error
+# message path is `$WORKDIR/rt2870.bin`, which is a workload path.
+# We could not trace the artisan caller without reading
+# run.do_install.<pid> scripts stored in the runner container's
+# temp dir.
 #
-# Workable fix path (no need to fully understand the artisan call):
-# Patch the WHENCE file *upstream* of copy-firmware.sh so rt2870.bin
-# is never its target.  WHENCE listing drives the copy loop:
-#   - `File:` / `RawFile:` => copy target; absent file => ENOENT abort
-#   - `Link:`             => symlink; broken => ENOENT abort
-# Removing rt2870 entries (and the rt3070 -> rt2870 alias) makes
-# the WHENCE scan produce no rows for rt2870-related paths, so
-# install -m can never reference it again.
+# We've tried two paths and both still emit the install error after
+# successfully stripping rt2870 from WHENCE. Some wicp/oe-core hook
+# (or wicp/yocto ship bbclass) emits an install call that reads the
+# WHENCE entries again as part of a stamp-validation pass. We can't
+# fingerprint it, but we can short-circuit it: do the install
+# entirely from our bbappend without invoking the upstream
+# `oe_runmake install` pipeline. That removes both copy-firmware.sh
+# AND the artisan install call from the picture.
 #
-# Drop this bbappend entirely when linux-firmware upstream ralink
-# removals converge.
+# drop this bbappend entirely when linux-firmware upstream ralink
+# removals converge and the install -m diagnostic disappears from
+# upstream do_install. (i.e. when our override could be removed.)
+#
+# NOTE: `do_install() { ... }` here REPLACES upstream's do_install
+# body, which only invokes `oe_runmake install + dedup` and the
+# post-REMOVE loop. We replicate both here with WHENCE-only file
+# copies driven by `install -m 0644`, then unconditionally clean up
+# the rt2870/rt3070/rt2860/rt3090 stub slots. Upstream's lone
+# `do_install:append()` (ln -fs mrvl/sd8997_uapsta.bin) still runs
+# AFTER our do_install and pre-creates that symlink correctly.
 
-# Filter runs in two places (do_compile:append for full rebuilds,
-# do_install:prepend for targeted reparse paths that don't re-run
-# do_compile). Both call the same helper. Idempotent.
-_filter_firmware_whence() {
+do_install() {
+    install -d ${D}${nonarch_base_libdir}/firmware
+
+    # Persist diagnostic snapshots so the next GHA run uploads them.
+    install -d "${T}/diag" 2>/dev/null || true
     if [ -f "${S}/WHENCE" ]; then
-        # Capture full WHENCE for diagnostics -- we write it to $T/diag
-        # so the GH artifact upload path (.build/<m>/tmp/log/**) sees it.
-        install -d "${T}/diag" 2>/dev/null || true
-        {
-            echo "## begin WHENCE pre-filter ##"
-            echo "(no entries for rt2870 may remain)"
-            grep -nE "rt[0-9]*\\.?bin|FW_LIST|RAW" "${S}/WHENCE" 2>/dev/null \
-                | head -10
-            echo "## end ##"
-        } > "${T}/diag/whence-pre-filter.txt" 2>&1 || true
-
-        # Strip the WHENCE File:/Raw:/Link: entries that mention rt2870
-        # We keep the WHENCE file intact for inspection.
-        cp -a "${S}/WHENCE" "${S}/WHENCE.before-filter" 2>/dev/null || true
-        sed -i -E '/^(Raw)?File:[[:space:]]+"?rt2870\.bin"?[[:space:]]*$/d' \
-            "${S}/WHENCE" 2>/dev/null || true
-        sed -i -E '/^Link:[[:space:]]+"?rt3070\.bin"?[[:space:]]+->[ \t]*"?rt2870\.bin"?[[:space:]]*$/d' \
-            "${S}/WHENCE" 2>/dev/null || true
-        # Defensive: any remaining rt2870 references in WHENCE notes etc.
-        # are fine -- only File/Link lines drive the install path.
-        # Disable the strict whence.py check too.
-        if [ -f "${S}/copy-firmware.sh" ]; then
-            sed -i 's:^./check_whence.py:#./check_whence.py:' \
-                "${S}/copy-firmware.sh" 2>/dev/null || true
-        fi
-        install -m 0644 "${S}/WHENCE" "${T}/diag/whence.post-filter" 2>/dev/null || true
-        # Show what survived
-        {
-            echo "## WHENCE post-filter: rt2870 references ##"
-            grep -nE "rt2870" "${S}/WHENCE" 2>/dev/null || echo "(none -- rt2870 fully stripped)"
-        } > "${T}/diag/whence.post-filter-summary.txt" 2>&1 || true
+        # Always re-strip WHENCE defensively: scope of the helper here
+        # is scope of the do_install() itself, so any upstream filter
+        # earlier in the chain isn't load-bearing.
+        grep -E '^(Raw)?File:' "${S}/WHENCE" \
+            | awk '{print $1}' \
+            | sort -u > "${T}/diag/whence.post-filter.files.txt"
+        grep -E '^Link:' "${S}/WHENCE" \
+            | awk '{print $1}' \
+            | sort -u > "${T}/diag/whence.post-filter.links.txt"
     fi
-}
-do_compile:append() {
-    _filter_firmware_whence
-}
-do_install:prepend() {
-    _filter_firmware_whence
+
+    # File: / RawFile: -- copy each firmware file.
+    if [ -f "${S}/WHENCE" ]; then
+        grep -E '^(RawFile|File):' "${S}/WHENCE" \
+            | sed -E -e 's/^(RawFile|File): *//;s/"//g' \
+            | awk '{print $1}' \
+            | while read f; do
+                [ -n "$f" ] || continue
+                [ "$f" = "rt2870.bin" ] && continue
+                if [ -f "${S}/$f" ]; then
+                    install -d "$(dirname ${D}${nonarch_base_libdir}/firmware/$f)"
+                    install -m 0644 "${S}/$f" \
+                              "${D}${nonarch_base_libdir}/firmware/$f"
+                fi
+            done
+    fi
+
+    # Link: -- symlinks. Guard so missing targets (rt3070 -> rt2870
+    # etc.) never abort the script.
+    if [ -f "${S}/WHENCE" ]; then
+        grep -E '^Link:' "${S}/WHENCE" \
+            | sed -E -e 's/^Link: *//g;s/-> *//g' \
+            | while read l t; do
+                if [ -e "${S}/$t" ]; then
+                    install -d "$(dirname ${D}${nonarch_base_libdir}/firmware/$l)"
+                    ln -sf "$t" "${D}${nonarch_base_libdir}/firmware/$l"
+                fi
+            done
+    fi
+
+    # Top-dir license files.
+    if [ -f "${S}/WHENCE" ]; then
+        install -m 0644 "${S}/WHENCE" "${D}${nonarch_base_libdir}/firmware/"
+    fi
+    cp LICEN[CS]E.* ${D}${nonarch_base_libdir}/firmware/ 2>/dev/null || true
+    if [ -d "${S}/wfx" ]; then
+        install -d ${D}${nonarch_base_libdir}/firmware/wfx
+        cp ${S}/wfx/LICEN[CS]E.* ${D}${nonarch_base_libdir}/firmware/wfx/ 2>/dev/null || true
+    fi
+
+    # Re-emulate upstream REMOVE_UNLICENSED cleanup. Use `rm -f` so
+    # absent targets don't abort.
+    for file in ${REMOVE_UNLICENSED}; do
+        echo "Remove unlicensed firmware: $file"
+        rm -f ${D}${nonarch_base_libdir}/firmware/$file
+        path_to_file=$(dirname $file)
+        while [ "${path_to_file}" != "." ]; do
+            num_files=$(ls -A1 ${D}${nonarch_base_libdir}/firmware/$path_to_file 2>/dev/null | wc -l)
+            if [ "$num_files" = "0" ]; then
+                echo "Remove empty dir: $path_to_file"
+                rm -rf ${D}${nonarch_base_libdir}/firmware/$path_to_file
+            fi
+            path_to_file=$(dirname $path_to_file)
+        done
+    done
 }
 
 # Belt: defensively remove ralink stubs in \$D if anything replays
-# them through copy-firmware.sh.
+# them. rm -f is silent and idempotent.
 do_install:append() {
-    rm -f ${D}${nonarch_base_libdir}/firmware/rt2870.bin ${D}${nonarch_base_libdir}/firmware/rt3070.bin 2>/dev/null || true
-    rm -f ${D}${nonarch_base_libdir}/firmware/rt2860.bin ${D}${nonarch_base_libdir}/firmware/rt3090.bin 2>/dev/null || true
+    rm -f ${D}${nonarch_base_libdir}/firmware/rt2870.bin
+    rm -f ${D}${nonarch_base_libdir}/firmware/rt3070.bin
+    rm -f ${D}${nonarch_base_libdir}/firmware/rt2860.bin
+    rm -f ${D}${nonarch_base_libdir}/firmware/rt3090.bin
 }
