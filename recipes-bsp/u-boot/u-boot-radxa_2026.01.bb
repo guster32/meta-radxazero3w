@@ -99,9 +99,18 @@ do_compile:prepend() {
 
 do_deploy:append() {
     install -d ${DEPLOYDIR}
-    # New-style Rockchip binaries (preferred by mainline tooling)
-    install -m 755 ${B}/u-boot.itb          ${DEPLOYDIR}/u-boot.itb
-    install -m 755 ${B}/u-boot-rockchip.bin ${DEPLOYDIR}/u-boot.bin
+    # New-style Rockchip binaries (preferred by mainline tooling).
+    # binman writes:
+    #   ${B}/<defconfig>-<type>/u-boot.itb
+    #   ${B}/<defconfig>-<type>/u-boot-rockchip.bin (= UBOOT_CONFIG_BINARY[type])
+    # which u-boot.inc's uboot_deploy_config already symlinks into
+    # ${DEPLOYDIR}/u-boot-radxa-zero3w-${PV}.bin etc. We just promote
+    # the ITB into a stable filename `u-boot.itb` alongside the .bin
+    # for downstream image build steps (idbloader packing).
+    BUILDDIR="${B}/radxa-zero-3-rk3566_defconfig-radxa-zero3w"
+    [ -f ${BUILDDIR}/u-boot.itb ]          && install -m 644 ${BUILDDIR}/u-boot.itb          ${DEPLOYDIR}/u-boot.itb
+    [ -f ${BUILDDIR}/u-boot-rockchip.bin ] && install -m 644 ${BUILDDIR}/u-boot-rockchip.bin ${DEPLOYDIR}/u-boot-rockchip.bin
+    [ -f ${BUILDDIR}/u-boot-rockchip.bin ] && install -m 644 ${BUILDDIR}/u-boot-rockchip.bin ${DEPLOYDIR}/u-boot.bin
 }
 
 COMPATIBLE_MACHINE = "radxa-zero3w"
