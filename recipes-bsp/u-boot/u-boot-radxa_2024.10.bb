@@ -60,6 +60,12 @@ UBOOT_CONFIG_IMAGE_FSTYPES[radxa-zero3w] = "ext4 fit"
 UBOOT_SUFFIX ?= "bin"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+# mkeficapsule.c (u-boot host tool) requires libgnutls headers on the
+# host build. wrynose 6.0's u-boot-tools inherit gnutls-native via the
+# upstream DEPENDS list, but the recipe-specific radxa-zero3 path bypasses
+# u-boot-common.inc's DEFAULT_PREFERENCE setup -- add it explicitly.
+DEPENDS += "gnutls-native"
+
 # --- Patch out the SWIG pylibfdt .py build ----------------------------------
 # scripts/dtc/pylibfdt/libfdt_wrap.c was SWIG-generated against an older
 # Python C API and fails to compile under the wrynose 6.0 toolchain:
