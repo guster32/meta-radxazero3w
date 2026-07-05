@@ -67,7 +67,7 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 # Disable CONFIG_PYLIBFDT for our build. u-boot's dtc continues to ship
 # libfdt directly (libfdt_internal.shipped), so the device-tree tooling
 # works without the SWIG Python module.
-do_configure:append:radxa-zero3w() {
+do_configure:append() {
     if [ -f ${B}/.config ]; then
         sed -i 's/^CONFIG_PYLIBFDT=.*/# CONFIG_PYLIBFDT is not set/' ${B}/.config
         sed -i 's/^CONFIG_LIBFDT_USE_PYLIBFDT=.*/# CONFIG_LIBFDT_USE_PYLIBFDT is not set/' ${B}/.config
@@ -81,7 +81,7 @@ RK = "${UNPACKDIR}/rkbin"
 # BL31 = arm-trusted-firmware (.elf), ROCKCHIP_TPL = DDR init (.bin).
 # We grab the rk3568 bl31 (works as rk3566 family firmware) and the
 # 1056 MHz DDR binary (radxa-zero3 pred spec).
-do_compile:prepend:radxa-zero3w() {
+do_compile:prepend() {
     cp -a ${RK}/bin/rk35/rk3568_bl31_v1.44.elf              ${S}/
     cp -a ${RK}/bin/rk35/rk3566_ddr_1056MHz_v1.23.bin        ${S}/
     cp -a ${RK}/tools                                          ${S}/
