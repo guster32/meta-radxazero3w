@@ -82,6 +82,14 @@ do_compile:prepend() {
     if [ -d ${RK}/tools ]; then
         cp -a ${RK}/tools ${S}/
     fi
+    # mainline u-boot binman reads env vars BL31 / ROCKCHIP_TPL at
+    # make-time and bakes them into the rockchip-tpl + atf-bl31 regions
+    # of the produced u-boot-rockchip.bin. Without these the .binman
+    # stamp fails with "'simple-bin' is missing external blobs" even
+    # though the source files exist on disk. We export in the same
+    # shell that invokes oe_runmake below so they take effect.
+    [ -f ${S}/rk3568_bl31_cpu3_v1.01.elf ]    && export BL31=${S}/rk3568_bl31_cpu3_v1.01.elf
+    [ -f ${S}/rk3566_ddr_1056MHz_v1.25.bin ]  && export ROCKCHIP_TPL=${S}/rk3566_ddr_1056MHz_v1.25.bin
 }
 
 do_deploy:append() {
