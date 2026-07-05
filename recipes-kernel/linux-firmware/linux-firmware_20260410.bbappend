@@ -22,7 +22,13 @@
 #
 # Drop this bbappend entirely when linux-firmware upstream ralink
 # removals converge and the install -m diagnostic disappears.
-REMOVE_UNLICENSED += "rt2870.bin"
+#
+# Note: do NOT append to REMOVE_UNLICENSED here -- upstream's REMOVE
+# loop uses a regular `rm` (no -f), and it aborts if any file it
+# tries to remove isn't present. We achieve the same end via the
+# WHENCE pre-filter below: copy-firmware.sh never copies rt2870.bin
+# so the REMOVE loop's `rm rt2870.bin` would error.  Skipping the
+# REMOVE entry avoids that error path entirely.
 
 # Pre-filter WHENCE so copy-firmware.sh skips rt2870.bin even if the
 # ARTISAN install path looks for it. We replace its File: entry in
