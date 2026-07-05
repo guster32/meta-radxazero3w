@@ -58,7 +58,12 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 # host build. wrynose 6.0's u-boot-tools inherit gnutls-native via the
 # upstream DEPENDS list, but the recipe-specific radxa-zero3 path bypasses
 # u-boot-common.inc's DEFAULT_PREFERENCE setup -- add it explicitly.
-DEPENDS += "gnutls-native"
+# python3-pyelftools: binman (host python tool) reads ATF BL31 ELF
+# sections to inline them into the binman ITB. Without pyelftools in
+# the host sysroot, binman aborts with "Python: No module named
+# 'elftools'" while assembling binman/simple-bin/fit/images/@atf-SEQ.
+# python3-native + bcrypt: also required by binman / image signing.
+DEPENDS += "gnutls-native python3-pyelftools-native python3-native bc-native dtc-native"
 
 # --- Rockchip multi-stage artefact staging ---------------------------------
 RK = "${UNPACKDIR}/rkbin"
