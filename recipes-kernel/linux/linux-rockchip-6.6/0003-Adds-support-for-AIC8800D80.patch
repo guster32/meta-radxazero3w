@@ -2,6 +2,13 @@ From c4cb02a8bb6dbaa73d2d761432e846bb635f00ac Mon Sep 17 00:00:00 2001
 From: Gustavo <guster32@Gustavos-MacBook-Pro.local>
 Date: Thu, 29 Jan 2026 19:59:07 -0800
 Subject: [PATCH] Adds support for AIC8800D80
+Upstream-Status: Inappropriate [configuration]
+  The AIC8800D80 chip is a vendor-specific Broadcom-compatible WiFi/BT
+  chip glued to the Radxa Zero 3W board. The driver pulls in 4MB of code
+  including symbol tables and cfg80211/mac80211 shims that are inappropriate for
+  upstreaming as a generic driver. We vendor it as a radxa-zero3-specific
+  facet so the patch can carry an OUT_OF_TREE marker without dropping the
+  driver from our wic.
 
 ---
  drivers/bluetooth/Kconfig                     |     6 +
