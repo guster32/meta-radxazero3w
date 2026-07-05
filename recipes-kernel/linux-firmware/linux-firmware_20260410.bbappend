@@ -43,13 +43,13 @@ REMOVE_UNLICENSED += "rt2870.bin"
 do_install() {
     install -d ${D}${nonarch_base_libdir}/firmware
 
-    # File: / RawFile: -- copy each firmware file. We pipe through
-    # `tr` for case-insensitive matching and skip the rt2870 entry
-    # even if upstream WHENCE ever flips it to an alternative path.
+    # File: / RawFile: -- copy each firmware file. We skip the rt2870
+    # entry inline so its absent source doesn't abort; this pre-empts
+    # the upstream REMOVE_UNLICENSED pass that follows.
     if [ -f "${S}/WHENCE" ]; then
         grep -E '^(RawFile|File):' "${S}/WHENCE" \
             | sed -E -e 's/^(RawFile|File): *//;s/"//g' \
-            | awk '{ for (i=2; i<=NF; i++) printf "%s ", $i; print "" }' \
+            | awk '{print $1}' \
             | while read f; do
                 [ -n "$f" ] || continue
                 [ "$f" = "rt2870.bin" ] && continue
@@ -64,8 +64,10 @@ do_install() {
         grep -E '^Link:' "${S}/WHENCE" \
             | sed -E -e 's/^Link: *//g;s/-> *//g' \
             | while read l t; do
-                install -d "$(dirname ${D}${nonarch_base_libdir}/firmware/$l)"
-                ln -sf "$t" "${D}${nonarch_base_libdir}/firmware/$l"
+                if [ -e "${S}/$t" ]; then
+                    install -d "$(dirname ${D}${nonarch_base_libdir}/firmware/$l)"
+                    ln -sf "$t" "${D}${nonarch_base_libdir}/firmware/$l"
+                fi
             done
     fi
 
