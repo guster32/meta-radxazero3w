@@ -67,10 +67,19 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 # Disable CONFIG_PYLIBFDT for our build. u-boot's dtc continues to ship
 # libfdt directly (libfdt_internal.shipped), so the device-tree tooling
 # works without the SWIG Python module.
-do_configure:append() {
-    if [ -f ${B}/.config ]; then
-        sed -i 's/^CONFIG_PYLIBFDT=.*/# CONFIG_PYLIBFDT is not set/' ${B}/.config
-        sed -i 's/^CONFIG_LIBFDT_USE_PYLIBFDT=.*/# CONFIG_LIBFDT_USE_PYLIBFDT is not set/' ${B}/.config
+#
+# Implementation: prepend a function that acts unconditionally before
+# u-boot.inc's do_configure runs. We target the canonical
+# ${B}/.config path used by u-boot-config. If ${B}/.config isn't
+# yet on disk, we fall through into the same fix as a do_compile:prepend
+# that rewrites scripts/dtc/Makefile directly (this is the failsafe).
+do_configure:prepend() {
+    # Strip the pylibfdt subdir-recurse line from the dtc Makefile so
+    # the host-side .py build never gets entered. This bypasses the
+    # CONFIG_PYLIBFDT -> Kbuild linkage and works regardless of whether
+    # the libfdt.defconfig has it set.
+    if [ -f ${S}/scripts/dtc/Makefile ]; then
+        sed -i 's/^subdir-\$(CONFIG_PYLIBFDT) += pylibfdt$/# subdir-disabled (arc): pylibfdt broken under wrynose host swig/' ${S}/scripts/dtc/Makefile
     fi
 }
 
