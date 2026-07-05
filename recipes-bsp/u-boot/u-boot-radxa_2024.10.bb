@@ -60,6 +60,20 @@ UBOOT_CONFIG_IMAGE_FSTYPES[radxa-zero3w] = "ext4 fit"
 UBOOT_SUFFIX ?= "bin"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+# --- Patch out the SWIG pylibfdt .py build ----------------------------------
+# scripts/dtc/pylibfdt/libfdt_wrap.c was SWIG-generated against an older
+# Python C API and fails to compile under the wrynose 6.0 toolchain:
+#   error: too few arguments to function 'SWIG_Python_AppendOutput'
+# Disable CONFIG_PYLIBFDT for our build. u-boot's dtc continues to ship
+# libfdt directly (libfdt_internal.shipped), so the device-tree tooling
+# works without the SWIG Python module.
+do_configure:append:radxa-zero3w() {
+    if [ -f ${B}/.config ]; then
+        sed -i 's/^CONFIG_PYLIBFDT=.*/# CONFIG_PYLIBFDT is not set/' ${B}/.config
+        sed -i 's/^CONFIG_LIBFDT_USE_PYLIBFDT=.*/# CONFIG_LIBFDT_USE_PYLIBFDT is not set/' ${B}/.config
+    fi
+}
+
 # --- Rockchip multi-stage artefact staging ---------------------------------
 RK = "${UNPACKDIR}/rkbin"
 
