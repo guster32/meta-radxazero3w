@@ -111,6 +111,8 @@ do_deploy:append() {
     [ -f ${BUILDDIR}/u-boot.itb ]          && install -m 644 ${BUILDDIR}/u-boot.itb          ${DEPLOYDIR}/u-boot.itb
     [ -f ${BUILDDIR}/u-boot-rockchip.bin ] && install -m 644 ${BUILDDIR}/u-boot-rockchip.bin ${DEPLOYDIR}/u-boot-rockchip.bin
     [ -f ${BUILDDIR}/u-boot-rockchip.bin ] && install -m 644 ${BUILDDIR}/u-boot-rockchip.bin ${DEPLOYDIR}/u-boot.bin
+    # idbloader.img = first 4 MB of u-boot-rockchip.bin (TPL + SPL, before the FIT)
+    [ -f ${DEPLOYDIR}/u-boot-rockchip.bin ] && dd if=${DEPLOYDIR}/u-boot-rockchip.bin of=${DEPLOYDIR}/idbloader.img bs=1M count=4 2>/dev/null || true
 }
 
 COMPATIBLE_MACHINE = "radxa-zero3w"
