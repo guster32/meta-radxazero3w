@@ -12,10 +12,11 @@ SRCREV = "1ba51b059f25533c5529b7f68186190b47d6a7b3"
 # '/git/' into the path, and only then falls back to git fetch.
 # On the 3.8GB ARM64 builder, the mirror-fallback dance triggers an
 # OOM kill while retrying. The git: fetcher does a direct git clone
-# (no mirror fallback, no URL mangling), honors ;depth=1 properly, and
-# is significantly faster. ;nobranch=1 skips fetching all branches
-# and tags; SRCREV pins a specific commit, so only that one is needed.
-SRC_URI = "git:github.com/rockchip-linux/kernel.git;protocol=https;nobranch=1;depth=1"
+# (no mirror fallback, no URL mangling), honors ;depth=1 properly,
+# and is significantly faster. Keep ;branch=${KBRANCH} so the fetcher
+# fetches the right ref (SRCREV pins a specific commit within that
+# branch).
+SRC_URI = "git:github.com/rockchip-linux/kernel.git;protocol=https;branch=${KBRANCH};depth=1"
 
 LINUX_VERSION = "6.6.89"
 LINUX_VERSION_EXTENSION = "-rockchip"
