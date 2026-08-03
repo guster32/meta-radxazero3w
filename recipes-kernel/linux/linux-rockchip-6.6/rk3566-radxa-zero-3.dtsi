@@ -138,18 +138,22 @@
 
 &cpu0 {
 	cpu-supply = <&vdd_cpu>;
+	clocks = <&scmi_clk 0>;
 };
 
 &cpu1 {
 	cpu-supply = <&vdd_cpu>;
+	clocks = <&scmi_clk 0>;
 };
 
 &cpu2 {
 	cpu-supply = <&vdd_cpu>;
+	clocks = <&scmi_clk 0>;
 };
 
 &cpu3 {
 	cpu-supply = <&vdd_cpu>;
+	clocks = <&scmi_clk 0>;
 };
 
 
